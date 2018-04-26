@@ -13,9 +13,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class SamlIntegrationTestUtils {
@@ -36,10 +33,10 @@ public class SamlIntegrationTestUtils {
         return getMetadata(uaaUrl, SP_METADATA_PATH, zoneSubdomain);
     }
 
-    public static IdentityProvider createUaaSamlIdentityProvider(String idpName,
-                                                                 String uaaUrl,
-                                                                 String metadataZone,
-                                                                 String zoneSubdomain) {
+    public static IdentityProvider<SamlIdentityProviderDefinition> createUaaSamlIdentityProvider(String idpName,
+                                                                                                 String uaaUrl,
+                                                                                                 String metadataZone,
+                                                                                                 String zoneSubdomain) {
 
         SamlIdentityProviderDefinition definition = new SamlIdentityProviderDefinition();
         definition.setAddShadowUserOnLogin(true);
@@ -103,7 +100,7 @@ public class SamlIntegrationTestUtils {
     }
 
     private static MultiValueMap<String, String> createHeadersWithToken(String token, String zoneSubdomain) {
-        MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("Accept", APPLICATION_JSON_VALUE);
         headers.add("Authorization", "bearer " + token);
         headers.add("Content-Type", APPLICATION_JSON_VALUE);

@@ -303,7 +303,7 @@ public class IntegrationTestUtils {
     }
 
     /**
-     * {@link UserUtils#createUser(String, String, String, String, String, String, boolean, String)}
+     * {@link UserUtils#createUser(String, String, String, String, String, String, boolean, String, String)}
      */
     @Deprecated
     public static ScimUser createUser(RestTemplate client,
@@ -1014,6 +1014,13 @@ public class IntegrationTestUtils {
         return provider;
     }
 
+    /**
+     * We shouldn't use Simple SAML PHP anymore
+     * @param alias
+     * @param zoneId
+     * @return
+     */
+    @Deprecated()
     public static SamlIdentityProviderDefinition createSimplePHPSamlIDP(String alias, String zoneId) {
         if (!("simplesamlphp".equals(alias) || "simplesamlphp2".equals(alias))) {
             throw new IllegalArgumentException("Only valid origins are: simplesamlphp,simplesamlphp2");

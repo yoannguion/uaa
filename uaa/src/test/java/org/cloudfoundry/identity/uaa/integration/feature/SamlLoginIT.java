@@ -17,10 +17,9 @@ import org.cloudfoundry.identity.uaa.ServerRunning;
 import org.cloudfoundry.identity.uaa.account.UserInfoResponse;
 import org.cloudfoundry.identity.uaa.constants.OriginKeys;
 import org.cloudfoundry.identity.uaa.integration.util.IntegrationTestUtils;
-import org.cloudfoundry.identity.uaa.integration.util.SamlIdentityProviderCreator;
-import org.cloudfoundry.identity.uaa.integration.util.SamlIntegrationTestUtils;
 import org.cloudfoundry.identity.uaa.integration.util.ScreenshotOnFail;
 import org.cloudfoundry.identity.uaa.integration.util.UaaSamlIdpCreator;
+import org.cloudfoundry.identity.uaa.integration.util.UserUtils;
 import org.cloudfoundry.identity.uaa.mock.util.MockMvcUtils;
 import org.cloudfoundry.identity.uaa.oauth.client.ClientConstants;
 import org.cloudfoundry.identity.uaa.oauth.jwt.JwtHelper;
@@ -34,6 +33,7 @@ import org.cloudfoundry.identity.uaa.provider.saml.idp.SamlTestUtils;
 import org.cloudfoundry.identity.uaa.scim.ScimGroup;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMember;
 import org.cloudfoundry.identity.uaa.scim.ScimUser;
+import org.cloudfoundry.identity.uaa.test.HttpUtils;
 import org.cloudfoundry.identity.uaa.test.UaaTestAccounts;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.TestUaaUrlBuilder;
@@ -41,6 +41,7 @@ import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneConfiguration;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -111,13 +112,16 @@ import static org.springframework.security.oauth2.common.util.OAuth2Utils.GRANT_
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = DefaultIntegrationTestConfig.class)
 public class SamlLoginIT {
-
     private static final String SAML_ORIGIN = "simplesamlphp";
+    private static final String IDP_ZONE_PREFIX = "idp";
+    private static final String SP_ZONE_PREFIX = "sp";
+    private static final String ADMIN_CLIENT_SECRET = "adminsecret";
+
     @Autowired @Rule
     public IntegrationTestRule integrationTestRule;
-
-    @Rule
-    public RetryRule retryRule = new RetryRule(3);
+//
+//    @Rule
+//    public RetryRule retryRule = new RetryRule(3);
 
     @Rule
     public ScreenshotOnFail screenShootRule = new ScreenshotOnFail();
@@ -134,6 +138,8 @@ public class SamlLoginIT {
     @Value("${integration.test.base_url}")
     String baseUrl;
 
+    String spUrl;
+
     @Autowired
     TestAccounts testAccounts;
 
@@ -143,9 +149,11 @@ public class SamlLoginIT {
     ServerRunning serverRunning = ServerRunning.isRunning();
 
     private static SamlTestUtils samlTestUtils;
+    private static final RandomValueStringGenerator randomValueGenerator = new RandomValueStringGenerator();
 
     private TestUaaUrlBuilder testUaaUrlBuilder = new TestUaaUrlBuilder();
-    private SamlIdentityProviderCreator idpCreator;
+    private UaaSamlIdpCreator idpCreator;
+    private String adminToken;
 
     @BeforeClass
     public static void setupSamlUtils() throws Exception {
@@ -160,11 +168,29 @@ public class SamlLoginIT {
 
     @Before
     public void initIdpCreator() {
-        if (idpCreator == null) {
-            idpCreator = UaaSamlIdpCreator.createUaaZoneAndReturnCreator(adminRestTemplate, baseUrl, "idp", "sp");
+        if (adminToken == null) {
+            adminToken = IntegrationTestUtils.getClientCredentialsToken(baseUrl, "admin", ADMIN_CLIENT_SECRET);
         }
 
-        IntegrationTestUtils.createZoneOrUpdateSubdomain(adminRestTemplate, baseUrl, "sp", "sp");
+        String randomValue = randomValueGenerator.generate();
+        idpCreator = new UaaSamlIdpCreator(
+            adminToken,
+            baseUrl,
+            IDP_ZONE_PREFIX,
+            SP_ZONE_PREFIX
+        );
+
+        idpCreator.cleanup();
+        idpCreator.create();
+
+        idpCreator.createUserInIdpZone(testAccounts.getUserName());
+
+        spUrl = HttpUtils.prependSubdomain(baseUrl, SP_ZONE_PREFIX);
+    }
+
+    @After
+    public void cleanUp() {
+        idpCreator.cleanup();
     }
 
     public static String getValidRandomIDPMetaData() {
@@ -178,8 +204,10 @@ public class SamlLoginIT {
             webDriver.get(baseUrl.replace("localhost", domain) + "/logout.do");
             webDriver.manage().deleteAllCookies();
         }
-        webDriver.get("http://simplesamlphp.cfapps.io/module.php/core/authenticate.php?as=example-userpass&logout");
-        webDriver.get("http://simplesamlphp2.cfapps.io/module.php/core/authenticate.php?as=example-userpass&logout");
+        webDriver.get(spUrl + "/logout.do");
+        webDriver.manage().deleteAllCookies();
+//        webDriver.get("http://simplesamlphp.cfapps.io/module.php/core/authenticate.php?as=example-userpass&logout");
+//        webDriver.get("http://simplesamlphp2.cfapps.io/module.php/core/authenticate.php?as=example-userpass&logout");
     }
 
     @Test
@@ -211,32 +239,31 @@ public class SamlLoginIT {
     }
 
     @Test
-    public void testSimpleSamlPhpPasscodeRedirect() throws Exception {
-        testSimpleSamlLogin("/passcode", "Temporary Authentication Code");
+    public void testSamlPasscodeRedirect() throws Exception {
+        testSamlLogin("/passcode", "Temporary Authentication Code");
     }
 
     @Test
     public void testSimpleSamlLoginWithAddShadowUserOnLoginFalse() throws Exception {
         // Deleting marissa@test.org from simplesamlphp because previous SAML authentications automatically
         // create a UAA user with the email address as the username.
-        deleteUser(SAML_ORIGIN, testAccounts.getEmail());
+        //deleteUser(SAML_ORIGIN, testAccounts.getEmail());
 
-        IdentityProvider provider = IntegrationTestUtils.createIdentityProvider(SAML_ORIGIN, false, baseUrl, serverRunning);
         String clientId = "app-addnew-false"+ new RandomValueStringGenerator().generate();
         String redirectUri = "http://nosuchhostname:0/nosuchendpoint";
-        BaseClientDetails client = createClientAndSpecifyProvider(clientId, provider, redirectUri);
 
         String firstUrl = "/oauth/authorize?"
                 + "client_id=" + clientId
                 + "&response_type=code"
                 + "&redirect_uri=" + URLEncoder.encode(redirectUri, "UTF-8");
 
-        webDriver.get(baseUrl + firstUrl);
-        webDriver.findElement(By.xpath("//h2[contains(text(), 'Enter your username and password')]"));
+        String fullUrl = spUrl + firstUrl;
+        webDriver.get(fullUrl);
+        webDriver.findElement(By.xpath("//h1[contains(text(), 'Welcome to sp!')]"));
         webDriver.findElement(By.name("username")).clear();
         webDriver.findElement(By.name("username")).sendKeys(testAccounts.getUserName());
         webDriver.findElement(By.name("password")).sendKeys(testAccounts.getPassword());
-        webDriver.findElement(By.xpath("//input[@value='Login']")).click();
+        webDriver.findElement(By.xpath("//input[@value='SIGN IN']")).click();
 
         // We need to verify the last request URL through the performance log because the redirect
         // URI does not exist. When the webDriver follows the non-existent redirect URI it receives a
@@ -300,12 +327,11 @@ public class SamlLoginIT {
     }
 
     @Test
-    public void testSimpleSamlPhpLogin() throws Exception {
+    public void testExternalIdpLogin() throws Exception {
         Long beforeTest = System.currentTimeMillis();
-        testSimpleSamlLogin("/login", "Where to?");
+        testSamlLogin("/login", "Where to?");
         Long afterTest = System.currentTimeMillis();
-        String zoneAdminToken = IntegrationTestUtils.getClientCredentialsToken(serverRunning, "admin", "adminsecret");
-        ScimUser user = IntegrationTestUtils.getUser(zoneAdminToken, baseUrl, SAML_ORIGIN, testAccounts.getEmail());
+        ScimUser user = UserUtils.getUserByName(adminToken, baseUrl, SP_ZONE_PREFIX, testAccounts.getUserName());
         IntegrationTestUtils.validateUserLastLogon(user, beforeTest, afterTest);
     }
 
@@ -329,7 +355,7 @@ public class SamlLoginIT {
         IdentityProvider<SamlIdentityProviderDefinition> provider = createIdentityProvider(SAML_ORIGIN);
 
         webDriver.get(baseUrl + "/login");
-        Assert.assertEquals("Cloud Foundry", webDriver.getTitle());
+        assertEquals("Cloud Foundry", webDriver.getTitle());
         webDriver.findElement(By.xpath("//a[text()='" + provider.getConfig().getLinkText() + "']")).click();
         webDriver.findElement(By.xpath("//h2[contains(text(), 'Enter your username and password')]"));
         webDriver.findElement(By.name("username")).clear();
@@ -424,7 +450,7 @@ public class SamlLoginIT {
         provider = IntegrationTestUtils.createOrUpdateProvider(zoneAdminToken, baseUrl, provider);
 
         webDriver.get(baseUrl + "/login");
-        Assert.assertEquals("Cloud Foundry", webDriver.getTitle());
+        assertEquals("Cloud Foundry", webDriver.getTitle());
         webDriver.findElement(By.xpath("//a[text()='" + provider.getConfig().getLinkText() + "']")).click();
         webDriver.findElement(By.xpath("//h2[contains(text(), 'Enter your username and password')]"));
         webDriver.findElement(By.name("username")).clear();
@@ -442,37 +468,38 @@ public class SamlLoginIT {
 
     @Test
     public void testGroupIntegration() throws Exception {
-        testSimpleSamlLogin("/login", "Where to?", "marissa4", "saml2");
+        testSamlLogin("/login", "Where to?", "marissa4", "saml2");
     }
 
     @Test
     public void testFavicon_Should_Not_Save() throws Exception {
         webDriver.get(baseUrl + "/favicon.ico");
-        testSimpleSamlLogin("/login", "Where to?", "marissa4", "saml2");
+        testSamlLogin("/login", "Where to?", "marissa4", "saml2");
     }
 
 
-    private void testSimpleSamlLogin(String firstUrl, String lookfor) throws Exception {
-        testSimpleSamlLogin(firstUrl, lookfor, testAccounts.getUserName(), testAccounts.getPassword());
+    private void testSamlLogin(String firstUrl, String lookfor) throws Exception {
+        testSamlLogin(firstUrl, lookfor, testAccounts.getUserName(), testAccounts.getPassword());
     }
-    private void testSimpleSamlLogin(String firstUrl, String lookfor, String username, String password) throws Exception {
-        IdentityProvider<SamlIdentityProviderDefinition> provider = createIdentityProvider(SAML_ORIGIN);
+    private void testSamlLogin(String firstUrl, String lookfor, String username, String password) throws Exception {
+        IdentityProvider<SamlIdentityProviderDefinition> idpRegistration = idpCreator.getIdpRegistration();
 
-        webDriver.get(baseUrl + firstUrl);
-        Assert.assertEquals("Cloud Foundry", webDriver.getTitle());
-        webDriver.findElement(By.xpath("//a[text()='" + provider.getConfig().getLinkText() + "']")).click();
+        webDriver.get(spUrl + firstUrl);
+        assertEquals(SP_ZONE_PREFIX, webDriver.getTitle());
+        webDriver.findElement(By.xpath("//a[text()='" + idpRegistration.getConfig().getLinkText() + "']")).click();
         //takeScreenShot();
-        webDriver.findElement(By.xpath("//h2[contains(text(), 'Enter your username and password')]"));
+        webDriver.findElement(By.xpath("//h1[contains(text(), 'Welcome to idp!')]"));
         webDriver.findElement(By.name("username")).clear();
         webDriver.findElement(By.name("username")).sendKeys(username);
         webDriver.findElement(By.name("password")).sendKeys(password);
-        webDriver.findElement(By.xpath("//input[@value='Login']")).click();
+        webDriver.findElement(By.xpath("//input[@value='Sign in']")).click();
         assertThat(webDriver.findElement(By.cssSelector("h1")).getText(), Matchers.containsString(lookfor));
-        IntegrationTestUtils.validateAccountChooserCookie(baseUrl, webDriver);
+        IntegrationTestUtils.validateAccountChooserCookie(spUrl, webDriver);
     }
 
+    @Deprecated
     protected IdentityProvider<SamlIdentityProviderDefinition> createIdentityProvider(String originKey) throws Exception {
-        return idpCreator.createIdp(baseUrl);
+        return IntegrationTestUtils.createIdentityProvider(originKey, true, baseUrl, serverRunning);
     }
 
     protected BaseClientDetails createClientAndSpecifyProvider(String clientId, IdentityProvider provider,
@@ -1248,7 +1275,7 @@ public class SamlLoginIT {
         webDriver.get(baseUrl + "/logout.do");
         webDriver.get(testZone1Url + "/logout.do");
         webDriver.get(testZone1Url + "/login");
-        Assert.assertEquals(zone.getName(), webDriver.getTitle());
+        assertEquals(zone.getName(), webDriver.getTitle());
 
         List<WebElement> elements = webDriver.findElements(By.xpath("//a[text()='"+ samlIdentityProviderDefinition.getLinkText()+"']"));
         assertNotNull(elements);
@@ -1274,7 +1301,7 @@ public class SamlLoginIT {
         provider = IntegrationTestUtils.createOrUpdateProvider(zoneAdminToken,baseUrl,provider);
         assertNotNull(provider.getId());
         webDriver.get(testZone1Url + "/login");
-        Assert.assertEquals(zone.getName(), webDriver.getTitle());
+        assertEquals(zone.getName(), webDriver.getTitle());
         elements = webDriver.findElements(By.xpath("//a[text()='"+ samlIdentityProviderDefinition.getLinkText()+"']"));
         assertNotNull(elements);
         assertEquals(1, elements.size());
@@ -1284,7 +1311,7 @@ public class SamlLoginIT {
         provider = IntegrationTestUtils.createOrUpdateProvider(zoneAdminToken,baseUrl,provider);
         assertNotNull(provider.getId());
         webDriver.get(testZone1Url + "/login");
-        Assert.assertEquals(zone.getName(), webDriver.getTitle());
+        assertEquals(zone.getName(), webDriver.getTitle());
         elements = webDriver.findElements(By.xpath("//a[text()='"+ samlIdentityProviderDefinition.getLinkText()+"']"));
         assertNotNull(elements);
         assertEquals(2, elements.size());
@@ -1496,11 +1523,12 @@ public class SamlLoginIT {
 
     private void login(IdentityProvider<SamlIdentityProviderDefinition> provider) {
         webDriver.get(baseUrl + "/login");
-        Assert.assertEquals("Cloud Foundry", webDriver.getTitle());
+        assertEquals("Cloud Foundry", webDriver.getTitle());
         webDriver.findElement(By.xpath("//a[text()='" + provider.getConfig().getLinkText() + "']")).click();
         webDriver.findElement(By.xpath("//h2[contains(text(), 'Enter your username and password')]"));
         webDriver.findElement(By.name("username")).clear();
         webDriver.findElement(By.name("username")).sendKeys(testAccounts.getUserName());
+        //webDriver.findElement(By.name("username")).sendKeys("boyaaaaaaa oeiurcmaoeiruacmoeirucameir");
         webDriver.findElement(By.name("password")).sendKeys(testAccounts.getPassword());
         webDriver.findElement(By.xpath("//input[@value='Login']")).click();
     }

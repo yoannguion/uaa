@@ -40,7 +40,7 @@ import java.util.logging.Level;
 
 @Configuration
 @PropertySource("classpath:integration.test.properties")
-@PropertySource({"classpath:integration.test.properties", "classpath:uaa.test.yml"})
+//@PropertySource({"classpath:integration.test.properties", "classpath:uaa.test.yml"})
 public class DefaultIntegrationTestConfig {
 
     @Bean

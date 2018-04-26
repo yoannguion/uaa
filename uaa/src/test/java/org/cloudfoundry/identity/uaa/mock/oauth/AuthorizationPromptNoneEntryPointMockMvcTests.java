@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,6 +113,41 @@ public class AuthorizationPromptNoneEntryPointMockMvcTests extends InjectedMockC
 
             String redirectUrl = result.getResponse().getRedirectedUrl();
             Assert.assertThat(redirectUrl, containsString("session_state=sessionhash.saltvalue"));
+            verify(calculator).calculate(currentUserId, "ant", "http://example.com");
+        } finally {
+            uaaAuthorizationEndpoint.setOpenIdSessionStateCalculator(backupCalculator);
+        }
+    }
+
+    @Test
+    public void testSilentAuthentication_whenUserIsAuthenticated_updatesCurrentUserCookie() throws Exception {
+        UaaAuthorizationEndpoint uaaAuthorizationEndpoint = (UaaAuthorizationEndpoint) getWebApplicationContext().getBean("uaaAuthorizationEndpoint");
+        OpenIdSessionStateCalculator backupCalculator = uaaAuthorizationEndpoint.getOpenIdSessionStateCalculator();
+        try {
+            OpenIdSessionStateCalculator calculator = mock(OpenIdSessionStateCalculator.class);
+
+            uaaAuthorizationEndpoint.setOpenIdSessionStateCalculator(calculator);
+            when(calculator.calculate(anyString(), anyString(), anyString())).thenReturn("sessionhash.saltvalue");
+            String currentUserId = MockMvcUtils.getUserByUsername(getMockMvc(), "marissa", adminToken).getId();
+
+            //we need to know session id when we are calculating session_state
+            MockHttpSession session = new MockHttpSession(null, "12345") {
+                public String changeSessionId() {
+                    return "12345";
+                }
+            };
+            login(session);
+
+            MvcResult result = getMockMvc().perform(
+                get("/oauth/authorize?response_type=token&scope=openid&client_id=ant&prompt=none&redirect_uri=http://example.com/with/path.html")
+                    .session(session)
+            )
+                .andExpect(status().isFound())
+                .andReturn();
+
+            String redirectUrl = result.getResponse().getRedirectedUrl();
+            Assert.assertThat(redirectUrl, containsString("session_state=sessionhash.saltvalue"));
+            Assert.assertThat(result.getResponse().getHeader("Set-Cookie"), isNotNull());
             verify(calculator).calculate(currentUserId, "ant", "http://example.com");
         } finally {
             uaaAuthorizationEndpoint.setOpenIdSessionStateCalculator(backupCalculator);

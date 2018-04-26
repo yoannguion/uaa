@@ -76,6 +76,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -135,7 +136,8 @@ public class UaaAuthorizationEndpoint extends AbstractEndpoint implements Authen
                                   @RequestParam Map<String, String> parameters,
                                   SessionStatus sessionStatus,
                                   Principal principal,
-                                  HttpServletRequest request) {
+                                  HttpServletRequest request,
+                                  HttpServletResponse response) {
 
         ClientDetails client;
         String clientId;
@@ -207,6 +209,7 @@ public class UaaAuthorizationEndpoint extends AbstractEndpoint implements Authen
             // Validation is all done, so we can check for auto approval...
             if (authorizationRequest.isApproved()) {
                 if (responseTypes.contains("token") || responseTypes.contains("id_token")) {
+                    response.addCookie(new Cookie("Current-User", "foo"));
                     return getImplicitGrantOrHybridResponse(
                       authorizationRequest,
                       (Authentication) principal,

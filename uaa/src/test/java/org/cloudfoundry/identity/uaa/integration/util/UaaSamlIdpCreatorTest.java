@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -20,7 +24,7 @@ import static org.junit.Assert.*;
 public class UaaSamlIdpCreatorTest {
     private static final String IDP_ZONE = "idp";
     private static final String SP_ZONE = "sp";
-    public static final String ADMIN_CLIENT_SECRET = "adminsecret";
+    private static final String ADMIN_CLIENT_SECRET = "adminsecret";
 
     @Value("${integration.test.base_url}")
     private String baseUrl;
@@ -32,7 +36,6 @@ public class UaaSamlIdpCreatorTest {
     public void setup() throws Exception {
         adminToken = IntegrationTestUtils.getClientCredentialsToken(baseUrl, "admin", ADMIN_CLIENT_SECRET);
         uaaSamlIdpCreator = new UaaSamlIdpCreator(adminToken, baseUrl, IDP_ZONE, SP_ZONE);
-        uaaSamlIdpCreator.cleanup();
     }
 
     @After
@@ -41,7 +44,18 @@ public class UaaSamlIdpCreatorTest {
     }
 
     @Test
-    public void create_createsSpAndIdpZones() {
+    public void testCleanup_canBeRunMultipleTimes() {
+        uaaSamlIdpCreator.cleanup();
+
+        try {
+            uaaSamlIdpCreator.cleanup();
+        } catch (RuntimeException e) {
+            fail("No exceptions should be thrown");
+        }
+    }
+
+    @Test
+    public void testCreate_createsSpAndIdpZones() {
         uaaSamlIdpCreator.create();
 
         IdentityZone createdZone = IdentityZoneUtils.getZone(adminToken, baseUrl, SP_ZONE);
@@ -51,7 +65,7 @@ public class UaaSamlIdpCreatorTest {
     }
 
     @Test
-    public void create_registersIdentityProviderInSpZone() {
+    public void testCreate_registersIdentityProviderInSpZone() {
         uaaSamlIdpCreator.create();
 
         IdentityProvider identityProvider =
@@ -61,16 +75,16 @@ public class UaaSamlIdpCreatorTest {
     }
 
     @Test
-    public void create_registersServiceProviderInIdpZone() {
+    public void testCreate_registersServiceProviderInIdpZone() {
         uaaSamlIdpCreator.create();
 
-        SamlServiceProvider serviceProvider =
+        Optional<SamlServiceProvider> serviceProvider =
             IdentityProviderUtils.getServiceProviderByName(adminToken, baseUrl, IDP_ZONE, SP_ZONE);
-        assertNotNull(serviceProvider);
+        assert(serviceProvider.isPresent());
     }
 
     @Test
-    public void createUserInIdpZone_createsUser() {
+    public void testCreateUserInIdpZone_createsUser() {
         String username = "marissa";
 
         uaaSamlIdpCreator.create();
