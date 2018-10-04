@@ -16,7 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
-import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeyElements;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -55,7 +54,7 @@ public class TokenKeyEndpoint {
 
     @RequestMapping(value = "/token_key", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<JsonWebKeyElements> getKey(Principal principal,
+    public ResponseEntity<JsonWebKey> getKey(Principal principal,
                                                      @RequestHeader(value = "If-None-Match", required = false, defaultValue = "NaN") String eTag) {
         String lastModified = ((Long) IdentityZoneHolder.get().getLastModified().getTime()).toString();
         if (unmodifiedResource(eTag, lastModified)) {
@@ -90,7 +89,7 @@ public class TokenKeyEndpoint {
      * @param principal the currently authenticated user if there is one
      * @return the key used to verify tokens
      */
-    public JsonWebKeyElements getKey(Principal principal) {
+    public JsonWebKey getKey(Principal principal) {
         KeyInfo key = keyInfoService.getActiveKey();
         if (!includeSymmetricalKeys(principal) && !RSA.name().equals(key.type())) {
             throw new AccessDeniedException("You need to authenticate to see a shared key");
@@ -98,7 +97,7 @@ public class TokenKeyEndpoint {
         return getVerificationKeyResponse(key);
     }
 
-    public static JsonWebKeyElements getVerificationKeyResponse(KeyInfo key) {
+    public static JsonWebKey getVerificationKeyResponse(KeyInfo key) {
         return new JsonWebKey(getResultMap(key));
     }
 
@@ -122,7 +121,7 @@ public class TokenKeyEndpoint {
     public JsonWebKeySet getKeys(Principal principal) {
         boolean includeSymmetric = includeSymmetricalKeys(principal);
         Map<String, KeyInfo> keys = keyInfoService.getKeys();
-        List<JsonWebKeyElements> keyResponses = keys.values().stream()
+        List<JsonWebKey> keyResponses = keys.values().stream()
                 .filter(k -> includeSymmetric || RSA.name().equals(k.type()))
                 .map(TokenKeyEndpoint::getVerificationKeyResponse)
                 .collect(Collectors.toList());

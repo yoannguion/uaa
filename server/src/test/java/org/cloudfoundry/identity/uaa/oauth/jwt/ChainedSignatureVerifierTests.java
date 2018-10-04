@@ -93,31 +93,31 @@ public class ChainedSignatureVerifierTests {
 
     @Test
     public void test_single_key_valid() {
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(validKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(validKey)));
         signedValidContent.verifySignature(verifier);
     }
 
     @Test(expected = InvalidSignatureException.class)
     public void test_single_key_invalid() {
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(invalidKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(invalidKey)));
         signedValidContent.verifySignature(verifier);
     }
 
     @Test
     public void test_multi_key_first_valid() {
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(validKey, invalidKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(validKey, invalidKey)));
         signedValidContent.verifySignature(verifier);
     }
 
     @Test
     public void test_multi_key_last_valid() {
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(invalidKey, validKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(invalidKey, validKey)));
         signedValidContent.verifySignature(verifier);
     }
 
     @Test(expected = InvalidSignatureException.class)
     public void test_multi_key_invalid() {
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(invalidKey, invalidKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(invalidKey, invalidKey)));
         signedValidContent.verifySignature(verifier);
     }
 
@@ -128,7 +128,7 @@ public class ChainedSignatureVerifierTests {
         p.put("kid", "macid");
         p.put("value", "test-mac-key");
         JsonWebKey macKey = new JsonWebKey(p);
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(validKey, invalidKey, macKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(validKey, invalidKey, macKey)));
         List<SignatureVerifier> delegates = new ArrayList((List<SignatureVerifier>) ReflectionTestUtils.getField(verifier, verifier.getClass(), "delegates"));
         assertNotNull(delegates);
         assertEquals(3, delegates.size());
@@ -184,7 +184,7 @@ public class ChainedSignatureVerifierTests {
         p.put("value", "mac-content");
         JsonWebKey jsonWebKey = new JsonWebKey(p);
 
-        verifier = new ChainedSignatureVerifier(new JsonWebKeySet<>(Arrays.asList(validKey, jsonWebKey)));
+        verifier = new ChainedSignatureVerifier(new JsonWebKeySet(Arrays.asList(validKey, jsonWebKey)));
         signedValidContent.verifySignature(verifier);
         List<SignatureVerifier> delegates = new ArrayList((List<SignatureVerifier>) ReflectionTestUtils.getField(verifier, verifier.getClass(), "delegates"));
         assertNotNull(delegates);

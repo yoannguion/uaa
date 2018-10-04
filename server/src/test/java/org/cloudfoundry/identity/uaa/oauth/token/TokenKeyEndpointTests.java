@@ -2,8 +2,8 @@ package org.cloudfoundry.identity.uaa.oauth.token;
 
 import org.cloudfoundry.identity.uaa.oauth.KeyInfoService;
 import org.cloudfoundry.identity.uaa.oauth.TokenKeyEndpoint;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
-import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeyElements;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.MapCollector;
 import org.cloudfoundry.identity.uaa.zone.IdentityZone;
@@ -88,7 +88,7 @@ public class TokenKeyEndpointTests {
     @Test
     public void sharedSecretIsReturnedFromTokenKeyEndpoint() {
         configureKeysForDefaultZone(Collections.singletonMap("someKeyId", "someKey"));
-        JsonWebKeyElements response = tokenKeyEndpoint.getKey(validUaaResource);
+        JsonWebKey response = tokenKeyEndpoint.getKey(validUaaResource);
         assertEquals("HS256", response.getAlgorithm());
         assertEquals("someKey", response.getKey());
         assertEquals("someKeyId", response.getId());
@@ -108,7 +108,7 @@ public class TokenKeyEndpointTests {
     @Test
     public void responseIsBackwardCompatibleWithMap() {
         configureKeysForDefaultZone(Collections.singletonMap("literallyAnything", "someKey"));
-        JsonWebKeyElements response = tokenKeyEndpoint.getKey(validUaaResource);
+        JsonWebKey response = tokenKeyEndpoint.getKey(validUaaResource);
 
         String serialized = JsonUtils.writeValueAsString(response);
 
@@ -123,7 +123,7 @@ public class TokenKeyEndpointTests {
     public void keyIsReturnedForZone() {
         createAndSetTestZoneWithKeys(Collections.singletonMap("key1", SIGNING_KEY_1));
 
-        JsonWebKeyElements response = tokenKeyEndpoint.getKey(mock(Principal.class));
+        JsonWebKey response = tokenKeyEndpoint.getKey(mock(Principal.class));
         Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
@@ -141,7 +141,7 @@ public class TokenKeyEndpointTests {
         configureKeysForDefaultZone(Collections.singletonMap("someKeyId", "someKey"));
         createAndSetTestZoneWithKeys(null);
 
-        JsonWebKeyElements response = tokenKeyEndpoint.getKey(validUaaResource);
+        JsonWebKey response = tokenKeyEndpoint.getKey(validUaaResource);
 
         assertEquals("HS256", response.getAlgorithm());
         assertEquals("someKey", response.getKey());
@@ -160,14 +160,14 @@ public class TokenKeyEndpointTests {
         configureKeysForDefaultZone(keysForUaaZone);
 
         JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(null);
-        List<JsonWebKeyElements> keys = keysResponse.getKeys();
-        List<String> keyIds = keys.stream().map(JsonWebKeyElements::getId).collect(Collectors.toList());
+        List<JsonWebKey> keys = keysResponse.getKeys();
+        List<String> keyIds = keys.stream().map(JsonWebKey::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("RsaKey1", "RsaKey2", "RsaKey3"));
 
-        HashMap<String, JsonWebKeyElements> keysMap = keys.stream().collect(new MapCollector<>(k -> k.getId(), k -> k));
-        JsonWebKeyElements key1Response = keysMap.get("RsaKey1");
-        JsonWebKeyElements key2Response = keysMap.get("RsaKey2");
-        JsonWebKeyElements key3Response = keysMap.get("RsaKey3");
+        HashMap<String, JsonWebKey> keysMap = keys.stream().collect(new MapCollector<>(k -> k.getId(), k -> k));
+        JsonWebKey key1Response = keysMap.get("RsaKey1");
+        JsonWebKey key2Response = keysMap.get("RsaKey2");
+        JsonWebKey key3Response = keysMap.get("RsaKey3");
 
         byte[] bytes = "Text for testing of private/public key match".getBytes();
         RsaSigner rsaSigner = new RsaSigner(SIGNING_KEY_1);
@@ -201,11 +201,11 @@ public class TokenKeyEndpointTests {
         configureKeysForDefaultZone(keysForUaaZone);
 
         JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(validUaaResource);
-        List<JsonWebKeyElements> keys = keysResponse.getKeys();
-        List<String> keyIds = keys.stream().map(JsonWebKeyElements::getId).collect(Collectors.toList());
+        List<JsonWebKey> keys = keysResponse.getKeys();
+        List<String> keyIds = keys.stream().map(JsonWebKey::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("RsaKey1", "RsaKey2", "RsaKey3", "SymmetricKey"));
 
-        JsonWebKeyElements symKeyResponse = keys.stream().filter(k -> k.getId().equals("SymmetricKey")).findAny().get();
+        JsonWebKey symKeyResponse = keys.stream().filter(k -> k.getId().equals("SymmetricKey")).findAny().get();
         assertEquals("ItHasSomeTextThatIsNotPEM", symKeyResponse.getKey());
     }
 
@@ -217,8 +217,8 @@ public class TokenKeyEndpointTests {
         createAndSetTestZoneWithKeys(keys);
 
         JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class));
-        List<JsonWebKeyElements> keysForZone = keysResponse.getKeys();
-        List<String> keyIds = keysForZone.stream().map(JsonWebKeyElements::getId).collect(Collectors.toList());
+        List<JsonWebKey> keysForZone = keysResponse.getKeys();
+        List<String> keyIds = keysForZone.stream().map(JsonWebKey::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("key1", "key2"));
     }
 
@@ -226,7 +226,7 @@ public class TokenKeyEndpointTests {
     public void responseHeaderIncludesEtag() {
         createAndSetTestZoneWithKeys(Collections.singletonMap("key1", SIGNING_KEY_1));
 
-        ResponseEntity<JsonWebKeyElements> keyResponse = tokenKeyEndpoint.getKey(mock(Principal.class), "NaN");
+        ResponseEntity<JsonWebKey> keyResponse = tokenKeyEndpoint.getKey(mock(Principal.class), "NaN");
         HttpHeaders headers = keyResponse.getHeaders();
         assertNotNull(headers.get("ETag"));
 
@@ -241,7 +241,7 @@ public class TokenKeyEndpointTests {
 
         String lastModified = String.valueOf(zone.getLastModified().getTime());
 
-        ResponseEntity<JsonWebKeyElements> keyResponse = tokenKeyEndpoint.getKey(mock(Principal.class), lastModified);
+        ResponseEntity<JsonWebKey> keyResponse = tokenKeyEndpoint.getKey(mock(Principal.class), lastModified);
         assertEquals(keyResponse.getStatusCode(), HttpStatus.NOT_MODIFIED);
 
         ResponseEntity<JsonWebKeySet> keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class), lastModified);

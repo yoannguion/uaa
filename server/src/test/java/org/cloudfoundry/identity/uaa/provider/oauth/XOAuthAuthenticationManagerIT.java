@@ -29,7 +29,6 @@ import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.oauth.token.ClaimConstants;
 import org.cloudfoundry.identity.uaa.oauth.token.CompositeToken;
-import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeyElements;
 import org.cloudfoundry.identity.uaa.provider.*;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMember;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMembershipManager;
@@ -606,7 +605,7 @@ public class XOAuthAuthenticationManagerIT {
         });
         mapValid.remove("value");
         mapInvalid.remove("value");
-        String json = JsonUtils.writeValueAsString(new JsonWebKeySet<>(Arrays.asList(new JsonWebKey(mapInvalid), new JsonWebKey(mapValid))));
+        String json = JsonUtils.writeValueAsString(new JsonWebKeySet(Arrays.asList(new JsonWebKey(mapInvalid), new JsonWebKey(mapValid))));
         configureTokenKeyResponse("http://localhost/token_key", json);
         addTheUserOnAuth();
         xoAuthAuthenticationManager.authenticate(xCodeToken);
@@ -620,7 +619,7 @@ public class XOAuthAuthenticationManagerIT {
         });
         Map<String, Object> mapInvalid2 = JsonUtils.readValue(jsonInvalid2, new TypeReference<Map<String, Object>>() {
         });
-        String json = JsonUtils.writeValueAsString(new JsonWebKeySet<>(Arrays.asList(new JsonWebKey(mapInvalid), new JsonWebKey(mapInvalid2))));
+        String json = JsonUtils.writeValueAsString(new JsonWebKeySet(Arrays.asList(new JsonWebKey(mapInvalid), new JsonWebKey(mapInvalid2))));
         assertTrue(json.contains("\"invalidKey\""));
         assertTrue(json.contains("\"invalidKey2\""));
         configureTokenKeyResponse("http://localhost/token_key", json);
@@ -755,8 +754,8 @@ public class XOAuthAuthenticationManagerIT {
         config.setTokenKey(null);
 
         KeyInfo key = KeyInfoBuilder.build("correctKey", PRIVATE_KEY, UAA_ISSUER_URL);
-        JsonWebKeyElements jsonWebKeyElements = TokenKeyEndpoint.getVerificationKeyResponse(key);
-        String response = JsonUtils.writeValueAsString(jsonWebKeyElements);
+        JsonWebKey JsonWebKey = TokenKeyEndpoint.getVerificationKeyResponse(key);
+        String response = JsonUtils.writeValueAsString(JsonWebKey);
 
         mockToken();
         mockUaaServer.expect(requestTo("http://localhost/token_key"))
@@ -1072,7 +1071,7 @@ public class XOAuthAuthenticationManagerIT {
 
     private String getKeyJson(String signingKey, String keyId, boolean list) {
         KeyInfo key = KeyInfoBuilder.build(keyId, signingKey, UAA_ISSUER_URL);
-        JsonWebKeyElements keyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
+        JsonWebKey keyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
         Object verificationKeyResponse = list ? new JsonWebKeySet(Collections.singletonList(keyResponse)) : keyResponse;
         return JsonUtils.writeValueAsString(verificationKeyResponse);
     }

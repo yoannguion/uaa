@@ -110,18 +110,18 @@ public class RsaJsonWebKeyTests {
 
     @Test
     public void ensure_that_duplicates_are_removed() {
-        JsonWebKeySet<JsonWebKey> keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet<JsonWebKey>>() {
+        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {
         });
         List<JsonWebKey> list = new ArrayList<>(keys.getKeys());
         list.addAll(keys.getKeys());
         assertEquals(6, list.size());
-        keys = new JsonWebKeySet<>(list);
+        keys = new JsonWebKeySet(list);
         deserialize_azure_keys(JsonUtils.writeValueAsString(keys));
     }
 
     @Test
     public void ensure_that_duplicates_get_the_last_object() {
-        JsonWebKeySet<JsonWebKey> keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet<JsonWebKey>>() {
+        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {
         });
         List<JsonWebKey> list = new ArrayList<>(keys.getKeys());
         list.addAll(keys.getKeys());
@@ -132,7 +132,7 @@ public class RsaJsonWebKeyTests {
         list.add(new JsonWebKey(p));
         assertEquals(7, list.size());
 
-        keys = new JsonWebKeySet<>(list);
+        keys = new JsonWebKeySet(list);
         keys = deserialize_azure_keys(JsonUtils.writeValueAsString(keys));
 
         assertEquals(ISSUER, keys.getKeys().get(2).getKeyProperties().get("issuer"));
@@ -175,8 +175,8 @@ public class RsaJsonWebKeyTests {
     }
 
 
-    private JsonWebKeySet<JsonWebKey> deserialize_azure_keys(String json) {
-        JsonWebKeySet<JsonWebKey> keys = JsonUtils.readValue(json, new TypeReference<JsonWebKeySet<JsonWebKey>>() {
+    private JsonWebKeySet deserialize_azure_keys(String json) {
+        JsonWebKeySet keys = JsonUtils.readValue(json, new TypeReference<JsonWebKeySet>() {
         });
         assertNotNull(keys);
         assertNotNull(keys.getKeys());

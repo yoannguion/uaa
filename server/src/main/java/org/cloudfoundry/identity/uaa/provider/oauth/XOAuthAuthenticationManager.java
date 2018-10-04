@@ -489,7 +489,7 @@ public class XOAuthAuthenticationManager extends ExternalLoginAuthenticationMana
             List<SignatureVerifier> signatureVerifiers = getTokenKeyForUaaOrigin();
             validation = buildIdTokenValidator(idToken, new ChainedSignatureVerifier(signatureVerifiers), keyInfoService);
         } else {
-            JsonWebKeySet<JsonWebKey> tokenKeyFromOAuth = getTokenKeyFromOAuth(config);
+            JsonWebKeySet tokenKeyFromOAuth = getTokenKeyFromOAuth(config);
             validation = buildIdTokenValidator(idToken, new ChainedSignatureVerifier(tokenKeyFromOAuth), keyInfoService)
                 .checkIssuer((isEmpty(config.getIssuer()) ? config.getTokenUrl().toString() : config.getIssuer()))
                 .checkAudience(config.getRelyingPartyId());
@@ -509,7 +509,7 @@ public class XOAuthAuthenticationManager extends ExternalLoginAuthenticationMana
         return key.startsWith("-----BEGIN");
     }
 
-    private JsonWebKeySet<JsonWebKey> getTokenKeyFromOAuth(AbstractXOAuthIdentityProviderDefinition config) {
+    private JsonWebKeySet getTokenKeyFromOAuth(AbstractXOAuthIdentityProviderDefinition config) {
 
         String tokenKey = config.getTokenKey();
         if (StringUtils.hasText(tokenKey)) {
@@ -517,11 +517,11 @@ public class XOAuthAuthenticationManager extends ExternalLoginAuthenticationMana
             p.put("value", tokenKey);
             p.put("kty", isAssymetricKey(tokenKey) ? RSA.name() : MAC.name());
             logger.debug("Key configured, returning.");
-            return new JsonWebKeySet<>(Arrays.asList(new JsonWebKey(p)));
+            return new JsonWebKeySet(Arrays.asList(new JsonWebKey(p)));
         }
         URL tokenKeyUrl = config.getTokenKeyUrl();
         if (tokenKeyUrl == null || !StringUtils.hasText(tokenKeyUrl.toString())) {
-            return new JsonWebKeySet<>(Collections.emptyList());
+            return new JsonWebKeySet(Collections.emptyList());
         }
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();

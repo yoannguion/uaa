@@ -43,7 +43,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 @JsonDeserialize(using = JsonWebKeyDeserializer.class)
 @JsonSerialize(using = JsonWebKeySerializer.class)
-public class JsonWebKey implements JsonWebKeyElements {
+public class JsonWebKey {
 
     public enum KeyUse {
         sig,

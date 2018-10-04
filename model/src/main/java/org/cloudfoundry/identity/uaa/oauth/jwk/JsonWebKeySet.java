@@ -26,14 +26,14 @@ import java.util.Set;
 /**
  * See https://tools.ietf.org/html/rfc7517
  */
-public class JsonWebKeySet<T extends JsonWebKey> {
+public class JsonWebKeySet {
 
-    private final List<T> keys;
+    private final List<JsonWebKey> keys;
 
-    public JsonWebKeySet(@JsonProperty("keys") List<T> keys) {
-        Set<T> set = new LinkedHashSet<>();
+    public JsonWebKeySet(@JsonProperty("keys") List<JsonWebKey> keys) {
+        Set<JsonWebKey> set = new LinkedHashSet<>();
         //rules for how to override duplicates
-        for (T key : keys) {
+        for (JsonWebKey key : keys) {
             if(key == null) continue;
             set.remove(key);
             set.add(key);
@@ -41,7 +41,7 @@ public class JsonWebKeySet<T extends JsonWebKey> {
         this.keys = new LinkedList(set);
     }
 
-    public List<T> getKeys() {
+    public List<JsonWebKey> getKeys() {
         return Collections.unmodifiableList(keys);
     }
 }

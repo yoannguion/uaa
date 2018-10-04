@@ -110,7 +110,7 @@ public class JsonWebKeySetTests {
 
     @Test
     public void test_multi_key() {
-        JsonWebKeySet<JsonWebKey> keys = test_key(multiKeyJson);
+        JsonWebKeySet keys = test_key(multiKeyJson);
         assertEquals(2, keys.getKeys().size());
         JsonWebKey key = keys.getKeys().get(1);
         assertEquals("HMACSHA256", key.getAlgorithm());
@@ -134,8 +134,8 @@ public class JsonWebKeySetTests {
         test_key(singleKeyJson);
     }
 
-    public JsonWebKeySet<JsonWebKey> test_key(String json) {
-        JsonWebKeySet<JsonWebKey> keys = JsonWebKeyHelper.deserialize(json);
+    public JsonWebKeySet test_key(String json) {
+        JsonWebKeySet keys = JsonWebKeyHelper.deserialize(json);
         assertNotNull(keys);
         assertNotNull(keys.getKeys());
         JsonWebKey key = keys.getKeys().get(0);
@@ -150,13 +150,13 @@ public class JsonWebKeySetTests {
 
     @Test
     public void testUnknownKeyType() {
-        JsonWebKeySet<JsonWebKey> keys = JsonWebKeyHelper.deserialize(unknownKeyJson);
+        JsonWebKeySet keys = JsonWebKeyHelper.deserialize(unknownKeyJson);
         assertEquals(0, keys.getKeys().size());
     }
 
     @Test
     public void testIgnoreUnknownKeyTypes() {
-        JsonWebKeySet<JsonWebKey> keys = JsonWebKeyHelper.deserialize(someUnknownKeysJson);
+        JsonWebKeySet keys = JsonWebKeyHelper.deserialize(someUnknownKeysJson);
         assertEquals(1, keys.getKeys().size());
     }
 

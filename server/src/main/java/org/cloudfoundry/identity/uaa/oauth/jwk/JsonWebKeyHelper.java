@@ -22,11 +22,11 @@ import java.util.Arrays;
 
 
 public class JsonWebKeyHelper {
-    public static JsonWebKeySet<JsonWebKey> deserialize(String s) {
+    public static JsonWebKeySet deserialize(String s) {
         if (!s.contains("\"keys\"")) {
-            return new JsonWebKeySet<>(Arrays.asList(JsonUtils.readValue(s, JsonWebKey.class)));
+            return new JsonWebKeySet(Arrays.asList(JsonUtils.readValue(s, JsonWebKey.class)));
         } else {
-            return JsonUtils.readValue(s, new TypeReference<JsonWebKeySet<JsonWebKey>>() {
+            return JsonUtils.readValue(s, new TypeReference<JsonWebKeySet>() {
             });
         }
     }
