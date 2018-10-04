@@ -2,6 +2,7 @@ package org.cloudfoundry.identity.uaa.oauth.token;
 
 import org.cloudfoundry.identity.uaa.oauth.KeyInfoService;
 import org.cloudfoundry.identity.uaa.oauth.TokenKeyEndpoint;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.MapCollector;
 import org.cloudfoundry.identity.uaa.zone.IdentityZone;
@@ -157,7 +158,7 @@ public class TokenKeyEndpointTests {
         keysForUaaZone.put("RsaKey3", SIGNING_KEY_3);
         configureKeysForDefaultZone(keysForUaaZone);
 
-        VerificationKeysListResponse keysResponse = tokenKeyEndpoint.getKeys(null);
+        JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(null);
         List<VerificationKeyResponse> keys = keysResponse.getKeys();
         List<String> keyIds = keys.stream().map(VerificationKeyResponse::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("RsaKey1", "RsaKey2", "RsaKey3"));
@@ -198,7 +199,7 @@ public class TokenKeyEndpointTests {
         keysForUaaZone.put("SymmetricKey", "ItHasSomeTextThatIsNotPEM");
         configureKeysForDefaultZone(keysForUaaZone);
 
-        VerificationKeysListResponse keysResponse = tokenKeyEndpoint.getKeys(validUaaResource);
+        JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(validUaaResource);
         List<VerificationKeyResponse> keys = keysResponse.getKeys();
         List<String> keyIds = keys.stream().map(VerificationKeyResponse::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("RsaKey1", "RsaKey2", "RsaKey3", "SymmetricKey"));
@@ -214,7 +215,7 @@ public class TokenKeyEndpointTests {
         keys.put("key2", SIGNING_KEY_2);
         createAndSetTestZoneWithKeys(keys);
 
-        VerificationKeysListResponse keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class));
+        JsonWebKeySet keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class));
         List<VerificationKeyResponse> keysForZone = keysResponse.getKeys();
         List<String> keyIds = keysForZone.stream().map(VerificationKeyResponse::getId).collect(Collectors.toList());
         assertThat(keyIds, containsInAnyOrder("key1", "key2"));
@@ -228,7 +229,7 @@ public class TokenKeyEndpointTests {
         HttpHeaders headers = keyResponse.getHeaders();
         assertNotNull(headers.get("ETag"));
 
-        ResponseEntity<VerificationKeysListResponse> keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class), "NaN");
+        ResponseEntity<JsonWebKeySet> keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class), "NaN");
         headers = keysResponse.getHeaders();
         assertNotNull(headers.get("ETag"));
     }
@@ -242,7 +243,7 @@ public class TokenKeyEndpointTests {
         ResponseEntity<VerificationKeyResponse> keyResponse = tokenKeyEndpoint.getKey(mock(Principal.class), lastModified);
         assertEquals(keyResponse.getStatusCode(), HttpStatus.NOT_MODIFIED);
 
-        ResponseEntity<VerificationKeysListResponse> keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class), lastModified);
+        ResponseEntity<JsonWebKeySet> keysResponse = tokenKeyEndpoint.getKeys(mock(Principal.class), lastModified);
         assertEquals(keysResponse.getStatusCode(), HttpStatus.NOT_MODIFIED);
     }
 

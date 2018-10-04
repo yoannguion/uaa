@@ -14,8 +14,8 @@ package org.cloudfoundry.identity.uaa.oauth;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
-import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeysListResponse;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -69,8 +69,8 @@ public class TokenKeyEndpoint {
 
     @RequestMapping(value = "/token_keys", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<VerificationKeysListResponse> getKeys(Principal principal,
-            @RequestHeader(value = "If-None-Match", required = false, defaultValue = "NaN") String eTag) {
+    public ResponseEntity<JsonWebKeySet> getKeys(Principal principal,
+                                                 @RequestHeader(value = "If-None-Match", required = false, defaultValue = "NaN") String eTag) {
         String lastModified = ((Long) IdentityZoneHolder.get().getLastModified().getTime()).toString();
         if (unmodifiedResource(eTag, lastModified)) {
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
@@ -118,14 +118,14 @@ public class TokenKeyEndpoint {
      * @param principal the currently authenticated user if there is one
      * @return the key used to verify tokens, wrapped in keys array
      */
-    public VerificationKeysListResponse getKeys(Principal principal) {
+    public JsonWebKeySet getKeys(Principal principal) {
         boolean includeSymmetric = includeSymmetricalKeys(principal);
         Map<String, KeyInfo> keys = keyInfoService.getKeys();
         List<VerificationKeyResponse> keyResponses = keys.values().stream()
                 .filter(k -> includeSymmetric || RSA.name().equals(k.type()))
                 .map(TokenKeyEndpoint::getVerificationKeyResponse)
                 .collect(Collectors.toList());
-        return new VerificationKeysListResponse(keyResponses);
+        return new JsonWebKeySet(keyResponses);
     }
 
     protected boolean includeSymmetricalKeys(Principal principal) {

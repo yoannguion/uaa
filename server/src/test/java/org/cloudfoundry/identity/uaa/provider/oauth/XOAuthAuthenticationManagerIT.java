@@ -30,7 +30,6 @@ import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.oauth.token.ClaimConstants;
 import org.cloudfoundry.identity.uaa.oauth.token.CompositeToken;
 import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
-import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeysListResponse;
 import org.cloudfoundry.identity.uaa.provider.*;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMember;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMembershipManager;
@@ -1074,7 +1073,7 @@ public class XOAuthAuthenticationManagerIT {
     private String getKeyJson(String signingKey, String keyId, boolean list) {
         KeyInfo key = KeyInfoBuilder.build(keyId, signingKey, UAA_ISSUER_URL);
         VerificationKeyResponse keyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
-        Object verificationKeyResponse = list ? new VerificationKeysListResponse(Collections.singletonList(keyResponse)) : keyResponse;
+        Object verificationKeyResponse = list ? new JsonWebKeySet(Collections.singletonList(keyResponse)) : keyResponse;
         return JsonUtils.writeValueAsString(verificationKeyResponse);
     }
 
