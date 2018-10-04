@@ -18,7 +18,6 @@ package org.cloudfoundry.identity.uaa.oauth.jwk;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.codec.binary.Base64;
-import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +43,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 @JsonDeserialize(using = JsonWebKeyDeserializer.class)
 @JsonSerialize(using = JsonWebKeySerializer.class)
-public class JsonWebKey implements VerificationKeyResponse {
+public class JsonWebKey implements JsonWebKeyElements {
 
     public enum KeyUse {
         sig,

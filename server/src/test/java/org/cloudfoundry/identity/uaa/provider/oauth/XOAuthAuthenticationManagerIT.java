@@ -29,7 +29,7 @@ import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.oauth.token.ClaimConstants;
 import org.cloudfoundry.identity.uaa.oauth.token.CompositeToken;
-import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeyElements;
 import org.cloudfoundry.identity.uaa.provider.*;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMember;
 import org.cloudfoundry.identity.uaa.scim.ScimGroupExternalMembershipManager;
@@ -755,8 +755,8 @@ public class XOAuthAuthenticationManagerIT {
         config.setTokenKey(null);
 
         KeyInfo key = KeyInfoBuilder.build("correctKey", PRIVATE_KEY, UAA_ISSUER_URL);
-        VerificationKeyResponse verificationKeyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
-        String response = JsonUtils.writeValueAsString(verificationKeyResponse);
+        JsonWebKeyElements jsonWebKeyElements = TokenKeyEndpoint.getVerificationKeyResponse(key);
+        String response = JsonUtils.writeValueAsString(jsonWebKeyElements);
 
         mockToken();
         mockUaaServer.expect(requestTo("http://localhost/token_key"))
@@ -1072,7 +1072,7 @@ public class XOAuthAuthenticationManagerIT {
 
     private String getKeyJson(String signingKey, String keyId, boolean list) {
         KeyInfo key = KeyInfoBuilder.build(keyId, signingKey, UAA_ISSUER_URL);
-        VerificationKeyResponse keyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
+        JsonWebKeyElements keyResponse = TokenKeyEndpoint.getVerificationKeyResponse(key);
         Object verificationKeyResponse = list ? new JsonWebKeySet(Collections.singletonList(keyResponse)) : keyResponse;
         return JsonUtils.writeValueAsString(verificationKeyResponse);
     }
