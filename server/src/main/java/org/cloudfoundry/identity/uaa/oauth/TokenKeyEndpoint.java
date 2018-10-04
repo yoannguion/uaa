@@ -14,6 +14,7 @@ package org.cloudfoundry.identity.uaa.oauth;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKeySet;
 import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
@@ -98,7 +99,7 @@ public class TokenKeyEndpoint {
     }
 
     public static VerificationKeyResponse getVerificationKeyResponse(KeyInfo key) {
-        return new VerificationKeyResponse(getResultMap(key));
+        return new JsonWebKey(getResultMap(key));
     }
 
     public static Map<String, Object> getResultMap(KeyInfo key) {

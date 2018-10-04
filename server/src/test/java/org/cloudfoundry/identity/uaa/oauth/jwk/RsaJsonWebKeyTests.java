@@ -130,7 +130,7 @@ public class RsaJsonWebKeyTests {
 
         Map<String, Object> p = new HashedMap(list.get(5).getKeyProperties());
         p.put("issuer", ISSUER);
-        list.add(new VerificationKeyResponse(p));
+        list.add(new JsonWebKey(p));
         assertEquals(7, list.size());
 
         keys = new JsonWebKeySet<>(list);
@@ -144,7 +144,7 @@ public class RsaJsonWebKeyTests {
         Map<String, Object> map = new HashMap();
         test_create_with_error(map);
         map.put("kty", "RSA");
-        new VerificationKeyResponse(map);
+        new JsonWebKey(map);
     }
 
     @Test
@@ -152,24 +152,24 @@ public class RsaJsonWebKeyTests {
         Map<String, Object> p1 = new HashMap<>();
         p1.put("kty", "RSA");
         Map<String, Object> p2 = new HashMap<>(p1);
-        assertEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertEquals(new JsonWebKey(p1), new JsonWebKey(p2));
         p1.put("kid", "id");
-        assertNotEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertNotEquals(new JsonWebKey(p1), new JsonWebKey(p2));
         p2.put("kid", "id");
-        assertEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertEquals(new JsonWebKey(p1), new JsonWebKey(p2));
         p1.put("issuer", "issuer1");
         p2.put("issuer", "issuer2");
-        assertEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertEquals(new JsonWebKey(p1), new JsonWebKey(p2));
         p1.remove("kid");
         p2.remove("kid");
-        assertNotEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertNotEquals(new JsonWebKey(p1), new JsonWebKey(p2));
         p2.put("issuer", "issuer1");
-        assertEquals(new VerificationKeyResponse(p1), new VerificationKeyResponse(p2));
+        assertEquals(new JsonWebKey(p1), new JsonWebKey(p2));
     }
 
     private void test_create_with_error(Map p) {
         try {
-            new VerificationKeyResponse(p);
+            new JsonWebKey(p);
             fail("Creation of key with properties:" + p + " should fail.");
         } catch (IllegalArgumentException x) {
         }

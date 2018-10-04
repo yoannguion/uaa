@@ -14,6 +14,7 @@ package org.cloudfoundry.identity.uaa.mock.token;
 
 import org.apache.commons.codec.binary.Base64;
 import org.cloudfoundry.identity.uaa.TestSpringContext;
+import org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey;
 import org.cloudfoundry.identity.uaa.oauth.token.VerificationKeyResponse;
 import org.cloudfoundry.identity.uaa.test.HoneycombAuditEventListenerRule;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
@@ -160,7 +161,7 @@ public class TokenKeyEndpointMockMvcTests {
           .andExpect(status().isOk())
           .andReturn();
         Map<String, Object> nonDefaultKey = JsonUtils.readValue(nonDefaultZoneResponse.getResponse().getContentAsString(), Map.class);
-        VerificationKeyResponse nonDefaultKeyResponse = new VerificationKeyResponse(nonDefaultKey);
+        VerificationKeyResponse nonDefaultKeyResponse = new JsonWebKey(nonDefaultKey);
 
         MvcResult defaultZoneResponse = mockMvc
           .perform(
@@ -172,7 +173,7 @@ public class TokenKeyEndpointMockMvcTests {
           .andReturn();
 
         Map<String, Object> defaultKey = JsonUtils.readValue(defaultZoneResponse.getResponse().getContentAsString(), Map.class);
-        VerificationKeyResponse defaultKeyResponse = new VerificationKeyResponse(defaultKey);
+        VerificationKeyResponse defaultKeyResponse = new JsonWebKey(defaultKey);
 
         assertNotEquals(nonDefaultKeyResponse.getValue(), defaultKeyResponse.getValue());
     }
