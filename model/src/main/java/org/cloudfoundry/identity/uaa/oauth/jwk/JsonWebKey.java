@@ -40,7 +40,6 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * See https://tools.ietf.org/html/rfc7517
  */
-
 @JsonDeserialize(using = JsonWebKeyDeserializer.class)
 @JsonSerialize(using = JsonWebKeySerializer.class)
 public class JsonWebKey {
@@ -67,7 +66,7 @@ public class JsonWebKey {
     }
 
     public static String KID = "kid";
-    public static String KTY = "kty";
+    private static String KTY = "kty";
     public static String ALG = "alg";
 
     private final Map<String, Object> json;
@@ -77,19 +76,23 @@ public class JsonWebKey {
             throw new IllegalArgumentException("kty field is required");
         }
         KeyType.valueOf((String) json.get("kty"));
-        this.json = new HashMap(json);
+        this.json = new HashMap<>(json);
     }
 
-    public Map<String, Object> getKeyProperties() {
+    Map<String, Object> getKeyProperties() {
         return Collections.unmodifiableMap(json);
     }
 
+    private String getStringProperty(String property) {
+        return (String) getKeyProperties().get(property);
+    }
+
     public final KeyType getKty() {
-        return KeyType.valueOf((String) getKeyProperties().get(KTY));
+        return KeyType.valueOf(getStringProperty(KTY));
     }
 
     public final String getKid() {
-        return (String) getKeyProperties().get(KID);
+        return getStringProperty(KID);
     }
 
     public JsonWebKey setKid(String kid) {
@@ -98,12 +101,11 @@ public class JsonWebKey {
     }
 
     public final KeyUse getUse() {
-        String use = (String) getKeyProperties().get("use");
-        KeyUse result = null;
+        String use = getStringProperty("use");
         if (hasText(use)) {
-            result = KeyUse.valueOf(use);
+            return KeyUse.valueOf(use);
         }
-        return result;
+        return null;
     }
 
     public String getId() {
@@ -111,7 +113,7 @@ public class JsonWebKey {
     }
 
     public String getKey() {
-        return (String) getKeyProperties().get("value");
+        return getStringProperty("value");
     }
 
     public String getType() {
@@ -119,11 +121,11 @@ public class JsonWebKey {
     }
 
     public String getModulus() {
-        return (String) getKeyProperties().get("n");
+        return getStringProperty("n");
     }
 
     public String getExponent() {
-        return (String) getKeyProperties().get("e");
+        return getStringProperty("e");
     }
 
     @Override
@@ -143,34 +145,42 @@ public class JsonWebKey {
         }
     }
 
-    //helper methods
     public String getAlgorithm() {
-        return (String) getKeyProperties().get(ALG);
+        return getStringProperty(ALG);
     }
 
     public String getValue() {
-        String result = (String) getKeyProperties().get("value");
-        if (result == null) {
-            if (RSA.equals(getKty())) {
-                result = pemEncodePublicKey(getRsaPublicKey(this));
-                this.json.put("value", result);
-            } else if (MAC.equals(getKty())) {
-                result = (String) getKeyProperties().get("k");
-                this.json.put("value", result);
-            }
+        String result = getStringProperty("value");
+        if(result != null) {
+            return result;
+        }
+
+        if (RSA.equals(getKty())) {
+            result = pemEncodePublicKey(getRsaPublicKey());
+            this.json.put("value", result);
+        } else if (MAC.equals(getKty())) {
+            result = getStringProperty("k");
+            this.json.put("value", result);
         }
         return result;
     }
 
-    public Set<KeyOperation> getKeyOps() {
-        List<String> result = (List<String>) getKeyProperties().get("key_ops");
-        if (result==null) {
-            result = Collections.emptyList();
+    Set<KeyOperation> getKeyOps() {
+        Object key_ops = getKeyProperties().get("key_ops");
+
+        List<Object> key_ops_list = key_ops instanceof List ? (List) key_ops : null;
+
+        if (key_ops_list == null) {
+            return Collections.emptySet();
         }
-        return result.stream().map(o -> KeyOperation.valueOf(o)).collect(Collectors.toSet());
+
+        return key_ops_list.stream()
+                .map(String::valueOf)
+                .map(KeyOperation::valueOf)
+                .collect(Collectors.toSet());
     }
 
-    public static String pemEncodePublicKey(PublicKey publicKey) {
+    private static String pemEncodePublicKey(PublicKey publicKey) {
         String begin = "-----BEGIN PUBLIC KEY-----\n";
         String end = "\n-----END PUBLIC KEY-----";
         byte[] data = publicKey.getEncoded();
@@ -178,18 +188,16 @@ public class JsonWebKey {
         return begin + base64encoded + end;
     }
 
-    public static PublicKey getRsaPublicKey(JsonWebKey key) {
+    PublicKey getRsaPublicKey() {
         final Base64 decoder = new Base64(true);
-        String e = (String) key.getKeyProperties().get("e");
-        String n = (String) key.getKeyProperties().get("n");
-        BigInteger modulus = new BigInteger(1, decoder.decode(n.getBytes(StandardCharsets.UTF_8)));
-        BigInteger exponent = new BigInteger(1, decoder.decode(e.getBytes(StandardCharsets.UTF_8)));
+        BigInteger modulus = new BigInteger(1, decoder.decode(getModulus().getBytes(StandardCharsets.UTF_8)));
+        BigInteger exponent = new BigInteger(1, decoder.decode(getExponent().getBytes(StandardCharsets.UTF_8)));
         try {
             return KeyFactory.getInstance("RSA").generatePublic(
                 new RSAPublicKeySpec(modulus, exponent)
             );
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e1) {
-            throw new IllegalStateException(e1);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

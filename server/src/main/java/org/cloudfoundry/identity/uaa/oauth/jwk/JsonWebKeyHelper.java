@@ -18,16 +18,14 @@ package org.cloudfoundry.identity.uaa.oauth.jwk;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 
-import java.util.Arrays;
-
+import java.util.Collections;
 
 public class JsonWebKeyHelper {
     public static JsonWebKeySet deserialize(String s) {
         if (!s.contains("\"keys\"")) {
-            return new JsonWebKeySet(Arrays.asList(JsonUtils.readValue(s, JsonWebKey.class)));
+            return new JsonWebKeySet(Collections.singletonList(JsonUtils.readValue(s, JsonWebKey.class)));
         } else {
-            return JsonUtils.readValue(s, new TypeReference<JsonWebKeySet>() {
-            });
+            return JsonUtils.readValue(s, new TypeReference<JsonWebKeySet>() {});
         }
     }
 }

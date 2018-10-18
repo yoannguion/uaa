@@ -1,5 +1,6 @@
 package org.cloudfoundry.identity.uaa.oauth;
 
+import org.cloudfoundry.identity.uaa.RsaKeyInfo;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

@@ -1,5 +1,6 @@
 package org.cloudfoundry.identity.uaa.oauth;
 
+import org.cloudfoundry.identity.uaa.RsaKeyInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

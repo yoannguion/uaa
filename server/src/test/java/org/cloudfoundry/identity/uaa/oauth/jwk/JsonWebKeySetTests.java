@@ -27,7 +27,7 @@ import static org.junit.Assert.assertNull;
 
 public class JsonWebKeySetTests {
 
-    public static final String singleKeyJson = "{\n" +
+    private static final String singleKeyJson = "{\n" +
         "    \"alg\": \"RS256\",\n" +
         "    \"e\": \"AQAB\",\n" +
         "    \"kid\": \"legacy\",\n" +
@@ -37,7 +37,7 @@ public class JsonWebKeySetTests {
         "    \"value\": \"-----BEGIN PUBLIC KEY-----\\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d\\nKVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX\\nqHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug\\nspULZVNRxq7veq/fzwIDAQAB\\n-----END PUBLIC KEY-----\"\n" +
         "}";
 
-    public static final String unknownKeyJson = "{\n" +
+    private static final String unknownKeyJson = "{\n" +
         "    \"alg\": \"RS256\",\n" +
         "    \"e\": \"AQAB\",\n" +
         "    \"kid\": \"legacy\",\n" +
@@ -47,7 +47,7 @@ public class JsonWebKeySetTests {
         "    \"value\": \"-----BEGIN PUBLIC KEY-----\\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d\\nKVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX\\nqHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug\\nspULZVNRxq7veq/fzwIDAQAB\\n-----END PUBLIC KEY-----\"\n" +
         "}";
 
-    public static final String multiKeyJson = "{\n" +
+    private static final String multiKeyJson = "{\n" +
         "    \"keys\": [\n" +
         "        {\n" +
         "            \"alg\": \"RS256\",\n" +
@@ -77,7 +77,7 @@ public class JsonWebKeySetTests {
         "    ]\n" +
         "}";
 
-    public static final String someUnknownKeysJson = "{\n" +
+    private static final String someUnknownKeysJson = "{\n" +
         "    \"keys\": [\n" +
         "        {\n" +
         "            \"alg\": \"RS256\",\n" +
@@ -134,7 +134,7 @@ public class JsonWebKeySetTests {
         test_key(singleKeyJson);
     }
 
-    public JsonWebKeySet test_key(String json) {
+    private JsonWebKeySet test_key(String json) {
         JsonWebKeySet keys = JsonWebKeyHelper.deserialize(json);
         assertNotNull(keys);
         assertNotNull(keys.getKeys());

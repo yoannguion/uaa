@@ -17,11 +17,7 @@ package org.cloudfoundry.identity.uaa.oauth.jwk;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * See https://tools.ietf.org/html/rfc7517
@@ -38,7 +34,7 @@ public class JsonWebKeySet {
             set.remove(key);
             set.add(key);
         }
-        this.keys = new LinkedList(set);
+        this.keys = new ArrayList<>(set);
     }
 
     public List<JsonWebKey> getKeys() {

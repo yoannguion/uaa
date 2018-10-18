@@ -17,46 +17,29 @@ package org.cloudfoundry.identity.uaa.oauth.jwk;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections.map.HashedMap;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.cloudfoundry.identity.uaa.oauth.KeyInfo;
+import org.cloudfoundry.identity.uaa.RsaKeyInfo;
 import org.cloudfoundry.identity.uaa.oauth.KeyInfoBuilder;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.RSAPrivateCrtKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey.KeyType.RSA;
 import static org.cloudfoundry.identity.uaa.oauth.jwk.JsonWebKey.KeyUse.sig;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.springframework.security.jwt.codec.Codecs.b64Decode;
-import static org.springframework.security.jwt.codec.Codecs.utf8Encode;
+import static org.junit.Assert.*;
 
 public class RsaJsonWebKeyTests {
     private static final String ISSUER = "http://localhost:8080/issuer";
 
     @Test
     public void create_key_from_pem_string() {
-        KeyInfo keyInfo = KeyInfoBuilder.build("id", sampleRsaPrivateKey, ISSUER);
+        RsaKeyInfo keyInfo = (RsaKeyInfo) KeyInfoBuilder.build("id", sampleRsaPrivateKey, ISSUER);
         assertEquals("RSA", keyInfo.type());
         assertNotNull(keyInfo.getVerifier());
 
@@ -69,7 +52,7 @@ public class RsaJsonWebKeyTests {
         assertEquals("sig", key.getKeyProperties().get("use"));
         assertNotNull(key.getValue());
 
-        PublicKey pk = parseKeyPair(keyInfo.verifierKey()).getPublic();
+        PublicKey pk = keyInfo.parseKeyPair(keyInfo.verifierKey()).getPublic();
 
         BigInteger exponent = ((RSAPublicKey) pk).getPublicExponent();
         BigInteger modulus = ((RSAPublicKey) pk).getModulus();
@@ -80,7 +63,7 @@ public class RsaJsonWebKeyTests {
 
     @Test
     public void create_key_from_public_pem_string() {
-        KeyInfo keyInfo = KeyInfoBuilder.build("id", sampleRsaPrivateKey, ISSUER);
+        RsaKeyInfo keyInfo = (RsaKeyInfo) KeyInfoBuilder.build("id", sampleRsaPrivateKey, ISSUER);
         assertEquals("RSA", keyInfo.type());
         assertNotNull(keyInfo.getVerifier());
 
@@ -94,7 +77,7 @@ public class RsaJsonWebKeyTests {
         assertEquals("sig", key.getKeyProperties().get("use"));
         assertNotNull(key.getValue());
 
-        PublicKey pk = parseKeyPair(keyInfo.verifierKey()).getPublic();
+        PublicKey pk = keyInfo.parseKeyPair(keyInfo.verifierKey()).getPublic();
         BigInteger exponent = ((RSAPublicKey) pk).getPublicExponent();
         BigInteger modulus = ((RSAPublicKey) pk).getModulus();
 
@@ -110,8 +93,7 @@ public class RsaJsonWebKeyTests {
 
     @Test
     public void ensure_that_duplicates_are_removed() {
-        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {
-        });
+        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {});
         List<JsonWebKey> list = new ArrayList<>(keys.getKeys());
         list.addAll(keys.getKeys());
         assertEquals(6, list.size());
@@ -121,8 +103,7 @@ public class RsaJsonWebKeyTests {
 
     @Test
     public void ensure_that_duplicates_get_the_last_object() {
-        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {
-        });
+        JsonWebKeySet keys = JsonUtils.readValue(sampleRsaKeys, new TypeReference<JsonWebKeySet>() {});
         List<JsonWebKey> list = new ArrayList<>(keys.getKeys());
         list.addAll(keys.getKeys());
         assertEquals(6, list.size());
@@ -176,15 +157,13 @@ public class RsaJsonWebKeyTests {
 
 
     private JsonWebKeySet deserialize_azure_keys(String json) {
-        JsonWebKeySet keys = JsonUtils.readValue(json, new TypeReference<JsonWebKeySet>() {
-        });
+        JsonWebKeySet keys = JsonUtils.readValue(json, new TypeReference<JsonWebKeySet>() {});
         assertNotNull(keys);
         assertNotNull(keys.getKeys());
         assertEquals(3, keys.getKeys().size());
         for (JsonWebKey key : keys.getKeys()) {
             assertNotNull(key);
-            assertNotNull(JsonWebKey.getRsaPublicKey(key));
-
+            assertNotNull(key.getRsaPublicKey());
         }
         return keys;
     }
@@ -245,59 +224,5 @@ public class RsaJsonWebKeyTests {
       "        }\n" +
       "    ]\n" +
       "}";
-    private static Pattern PEM_DATA = Pattern.compile("-----BEGIN (.*)-----(.*)-----END (.*)-----", Pattern.DOTALL);
 
-    private KeyPair parseKeyPair(String pemData) {
-        Matcher m = PEM_DATA.matcher(pemData.trim());
-
-        if (!m.matches()) {
-            throw new IllegalArgumentException("String is not PEM encoded data");
-        }
-
-        String type = m.group(1);
-        final byte[] content = b64Decode(utf8Encode(m.group(2)));
-
-        PublicKey publicKey;
-        PrivateKey privateKey = null;
-
-        try {
-            KeyFactory fact = KeyFactory.getInstance("RSA");
-            if (type.equals("RSA PRIVATE KEY")) {
-                ASN1Sequence seq = ASN1Sequence.getInstance(content);
-                if (seq.size() != 9) {
-                    throw new IllegalArgumentException("Invalid RSA Private Key ASN1 sequence.");
-                }
-                org.bouncycastle.asn1.pkcs.RSAPrivateKey key = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(seq);
-                RSAPublicKeySpec pubSpec = new RSAPublicKeySpec(key.getModulus(), key.getPublicExponent());
-                RSAPrivateCrtKeySpec privSpec = new RSAPrivateCrtKeySpec(
-                  key.getModulus(),
-                  key.getPublicExponent(),
-                  key.getPrivateExponent(),
-                  key.getPrime1(),
-                  key.getPrime2(),
-                  key.getExponent1(),
-                  key.getExponent2(),
-                  key.getCoefficient()
-                );
-                publicKey = fact.generatePublic(pubSpec);
-                privateKey = fact.generatePrivate(privSpec);
-            } else if (type.equals("PUBLIC KEY")) {
-                KeySpec keySpec = new X509EncodedKeySpec(content);
-                publicKey = fact.generatePublic(keySpec);
-            } else if (type.equals("RSA PUBLIC KEY")) {
-                ASN1Sequence seq = ASN1Sequence.getInstance(content);
-                org.bouncycastle.asn1.pkcs.RSAPublicKey key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(seq);
-                RSAPublicKeySpec pubSpec = new RSAPublicKeySpec(key.getModulus(), key.getPublicExponent());
-                publicKey = fact.generatePublic(pubSpec);
-            } else {
-                throw new IllegalArgumentException(type + " is not a supported format");
-            }
-
-            return new KeyPair(publicKey, privateKey);
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-    }
 }
