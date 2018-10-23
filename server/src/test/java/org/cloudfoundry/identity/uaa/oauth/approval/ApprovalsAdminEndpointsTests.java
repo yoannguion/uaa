@@ -29,36 +29,19 @@ import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.TimeServiceImpl;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.cloudfoundry.identity.uaa.zone.MultitenantJdbcClientDetailsService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.provider.NoSuchClientException;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
-import java.lang.reflect.Method;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.cloudfoundry.identity.uaa.approval.Approval.ApprovalStatus.APPROVED;
 import static org.cloudfoundry.identity.uaa.approval.Approval.ApprovalStatus.DENIED;
-import static org.cloudfoundry.identity.uaa.test.UaaTestAccounts.INSERT_BARE_BONE_USER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,24 +50,18 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private UaaTestAccounts testAccounts = null;
-
     private JdbcApprovalStore dao;
-
-    private UaaUserDatabase userDao = null;
 
     private UaaUser marissa;
 
     private ApprovalsAdminEndpoints endpoints;
 
-    private Random random = new Random(System.currentTimeMillis());
-
     @Before
     public void initApprovalsAdminEndpointsTests() {
-        testAccounts = UaaTestAccounts.standard(null);
+        UaaTestAccounts testAccounts = UaaTestAccounts.standard(null);
         String userId = testAccounts.addRandomUser(jdbcTemplate);
 
-        userDao = new JdbcUaaUserDatabase(jdbcTemplate, new TimeServiceImpl());
+        UaaUserDatabase userDao = new JdbcUaaUserDatabase(jdbcTemplate, new TimeServiceImpl());
 
         jdbcTemplate = new JdbcTemplate(dataSource);
         marissa = userDao.retrieveUserById(userId);
@@ -104,12 +81,10 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
         endpoints.setSecurityContextAccessor(mockSecurityContextAccessor(marissa.getUsername(), marissa.getId()));
     }
 
-
-
-    private void addApproval(String userName, String clientId, String scope, int expiresIn, ApprovalStatus status) {
+    private void addApproval(String userName, String scope, int expiresIn, ApprovalStatus status) {
         dao.addApproval(new Approval()
             .setUserId(userName)
-            .setClientId(clientId)
+            .setClientId("c1")
             .setScope(scope)
             .setExpiresAt(Approval.timeFromNow(expiresIn))
             .setStatus(status), IdentityZoneHolder.get().getId());
@@ -132,14 +107,14 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
     }
 
     @Test
-    public void validate_client_id_on_revoke() throws Exception {
+    public void validate_client_id_on_revoke() {
         exception.expect(NoSuchClientException.class);
         exception.expectMessage("No client with requested id: invalid_id");
         endpoints.revokeApprovals("invalid_id");
     }
 
     @Test
-    public void validate_client_id_on_update() throws Exception {
+    public void validate_client_id_on_update() {
         exception.expect(NoSuchClientException.class);
         exception.expectMessage("No client with requested id: invalid_id");
         endpoints.updateClientApprovals("invalid_id", new Approval[0]);
@@ -147,16 +122,16 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
 
     @Test
     public void canGetApprovals() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
         assertEquals(3, endpoints.getApprovals("user_id pr", 1, 100).size());
         assertEquals(2, endpoints.getApprovals("user_id pr", 1, 2).size());
     }
 
     @Test
-    public void testApprovalsDeserializationIsCaseInsensitive() throws Exception {
+    public void testApprovalsDeserializationIsCaseInsensitive() {
         Set<Approval> approvals = new HashSet<>();
         approvals.add(new Approval()
             .setUserId("test-user-id")
@@ -172,23 +147,23 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
     @Test
     public void canGetApprovalsWithAutoApproveTrue() {
         // Only get scopes that need approval
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
         assertEquals(3, endpoints.getApprovals("user_id eq \""+marissa.getId()+"\"", 1, 100).size());
 
-        addApproval(marissa.getId(), "c1", "read", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "write", 6000, APPROVED);
+        addApproval(marissa.getId(), "read", 12000, DENIED);
+        addApproval(marissa.getId(), "write", 6000, APPROVED);
 
         assertEquals(3, endpoints.getApprovals("user_id eq \""+marissa.getId()+"\"", 1, 100).size());
     }
 
     @Test
     public void canUpdateApprovals() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
         Approval[] app = new Approval[] {new Approval()
             .setUserId(marissa.getId())
@@ -269,12 +244,14 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
             .setStatus(APPROVED)));
     }
 
+    @Test
+    @Ignore
     public void attemptingToCreateDuplicateApprovalsExtendsValidity() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
-        addApproval(marissa.getId(), "c1", "openid", 10000, APPROVED);
+        addApproval(marissa.getId(), "openid", 10000, APPROVED);
 
         List<Approval> updatedApprovals = endpoints.getApprovals("user_id eq \""+marissa.getId()+"\"", 1, 100);
         assertEquals(3, updatedApprovals.size());
@@ -298,12 +275,14 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
             .setStatus(APPROVED)));
     }
 
+    @Test
+    @Ignore
     public void attemptingToCreateAnApprovalWithADifferentStatusUpdatesApproval() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
-        addApproval(marissa.getId(), "c1", "openid", 18000, DENIED);
+        addApproval(marissa.getId(), "openid", 18000, DENIED);
 
         List<Approval> updatedApprovals = endpoints.getApprovals("user_id eq \""+marissa.getId()+"\"", 1, 100);
         assertEquals(4, updatedApprovals.size());
@@ -327,11 +306,12 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
             .setStatus(DENIED)));
     }
 
-    @Test(expected = UaaException.class)
+    @Test
     public void userCannotUpdateApprovalsForAnotherUser() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        exception.expect(UaaException.class);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
         endpoints.setSecurityContextAccessor(mockSecurityContextAccessor("vidya", "123456"));
         endpoints.updateApprovals(new Approval[] {new Approval()
             .setUserId(marissa.getId())
@@ -343,39 +323,17 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
 
     @Test
     public void canRevokeApprovals() {
-        addApproval(marissa.getId(), "c1", "uaa.user", 6000, APPROVED);
-        addApproval(marissa.getId(), "c1", "uaa.admin", 12000, DENIED);
-        addApproval(marissa.getId(), "c1", "openid", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.user", 6000, APPROVED);
+        addApproval(marissa.getId(), "uaa.admin", 12000, DENIED);
+        addApproval(marissa.getId(), "openid", 6000, APPROVED);
 
         assertEquals(3, endpoints.getApprovals("user_id pr", 1, 100).size());
         assertEquals("ok", endpoints.revokeApprovals("c1").getStatus());
         assertEquals(0, endpoints.getApprovals("user_id pr", 1, 100).size());
     }
 
-    public void revokeApprovalsCountForUser(String userId) {
-        assertTrue(dao.revokeApprovalsForClient(userId, IdentityZoneHolder.get().getId()));
-    }
-
-    public void revokeApprovalsCountForClient(String clientId) {
-        assertTrue(dao.revokeApprovalsForClient(clientId, IdentityZoneHolder.get().getId()));
-    }
-
-    public void revokeApprovalsCountForClientAndUser(String clientId, String userId) {
-        assertTrue(dao.revokeApprovalsForClientAndUser(clientId, userId, IdentityZoneHolder.get().getId()));
-    }
-
-    public int getApprovalsCountForUser(String userId) {
-        return dao.getApprovalsForUser(userId, IdentityZoneHolder.get().getId()).size();
-    }
-
-    public int getApprovalsCountForClient(String clientId) {
-        return dao.getApprovalsForClient(clientId, IdentityZoneHolder.get().getId()).size();
-    }
-
-    public int getApprovalsCount(String clientId, String userId) {
-        return dao.getApprovals(userId, clientId, IdentityZoneHolder.get().getId()).size();
-    }
-
+    @Test
+    @Ignore
     public void rebuildIndices() {
         sqlNoError("OPTIMIZE TABLE users");
         sqlNoError("OPTIMIZE TABLE authz_approvals");
@@ -385,69 +343,13 @@ public class ApprovalsAdminEndpointsTests extends JdbcTestBase {
         sqlNoError("DBCC DBREINDEX ('authz_approvals')");
     }
 
-    public void sqlNoError(String sql) {
+    private void sqlNoError(String sql) {
         try {
             jdbcTemplate.update(sql);
             System.err.println("Succeeded: "+sql);
         } catch (Exception e) {
             System.err.println("Unsuccessful: "+sql);
         }
-    }
-
-
-    public double doWithTiming(String methodName, Object... args) throws Exception {
-        Method method = this.getClass().getMethod(methodName, Arrays.stream(args).map(a -> a.getClass()).collect(Collectors.toList()).toArray(new Class[0]));
-        double start = System.currentTimeMillis();
-        method.invoke(this, args);
-        double stop = System.currentTimeMillis();
-        double timing = (stop - start) / 1000d;
-        System.err.println(String.format("\nPerformed %s(%s) in %.4f seconds", methodName, Arrays.toString(args), timing));
-        return timing;
-    }
-
-
-
-    public void addUsers(final Integer startIndex, final Integer size) throws Exception {
-        jdbcTemplate.batchUpdate(INSERT_BARE_BONE_USER, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                String userId = "user-"+(i+startIndex);
-                int pos = 1;
-                ps.setString(pos++, userId);
-                ps.setString(pos++, userId);
-                ps.setString(pos++, userId);
-                ps.setString(pos++, userId + "@test.com");
-                ps.setString(pos++, IdentityZoneHolder.get().getId());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return size;
-            }
-        });
-    }
-
-
-    public void addApprovals(final Integer minUserId, final Integer maxUserId, final Integer countPerUser) throws Exception {
-        jdbcTemplate.batchUpdate("insert into authz_approvals (user_id, client_id, scope, expiresat, status, lastmodifiedat) values (?,?,?,?,?,?)", new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                int index = (i+minUserId) / countPerUser;
-                String userId = "user-"+(minUserId+index);
-                int pos = 1;
-                ps.setString(pos++, userId);
-                ps.setString(pos++, "c"+random.nextInt(200));
-                ps.setString(pos++, "uaa.user."+i);
-                ps.setTimestamp(pos++, new Timestamp(System.currentTimeMillis()+300000));
-                ps.setString(pos++, "APPROVED");
-                ps.setTimestamp(pos++, new Timestamp(System.currentTimeMillis()));
-            }
-
-            @Override
-            public int getBatchSize() {
-                return (maxUserId - minUserId) * countPerUser;
-            }
-        });
     }
 
 }
