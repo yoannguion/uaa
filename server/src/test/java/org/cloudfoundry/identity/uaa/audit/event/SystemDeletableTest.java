@@ -64,7 +64,7 @@ class SystemDeletableTest {
 
     @Test
     void uaa_default_zone_is_ignored() {
-        EntityDeletedEvent event = new EntityDeletedEvent(IdentityZone.getUaa(), authentication);
+        EntityDeletedEvent event = new EntityDeletedEvent(IdentityZone.getUaa(), authentication, IdentityZoneHolder.get());
         deletable.onApplicationEvent(event);
         verify(deletable, never()).deleteByIdentityZone(any());
         verify(deletable, never()).deleteByOrigin(any(),any());
@@ -75,7 +75,7 @@ class SystemDeletableTest {
     @Test
     void zone_event_received() {
 
-        EntityDeletedEvent event = new EntityDeletedEvent(zone, authentication);
+        EntityDeletedEvent event = new EntityDeletedEvent(zone, authentication, IdentityZoneHolder.get());
         deletable.onApplicationEvent(event);
         verify(deletable, times(1)).deleteByIdentityZone("zone-id");
         verify(deletable, never()).deleteByOrigin(any(),any());
@@ -87,7 +87,7 @@ class SystemDeletableTest {
     void provider_event_received() {
         IdentityProvider provider = new IdentityProvider();
         provider.setId("id").setIdentityZoneId("other-zone-id").setOriginKey("origin");
-        EntityDeletedEvent event = new EntityDeletedEvent(provider, authentication);
+        EntityDeletedEvent event = new EntityDeletedEvent(provider, authentication, IdentityZoneHolder.get());
         deletable.onApplicationEvent(event);
         verify(deletable, never()).deleteByIdentityZone(any());
         verify(deletable, times(1)).deleteByOrigin("origin","other-zone-id");
@@ -98,7 +98,7 @@ class SystemDeletableTest {
     @Test
     void client_event_received() {
         BaseClientDetails client = new BaseClientDetails("clientId", "", "", "client_credentials", "uaa.none");
-        EntityDeletedEvent<ClientDetails> event = new EntityDeletedEvent(client, authentication);
+        EntityDeletedEvent<ClientDetails> event = new EntityDeletedEvent(client, authentication, IdentityZoneHolder.get());
         for (IdentityZone zone : Arrays.asList(this.zone, IdentityZone.getUaa())) {
             resetDeletable();
             IdentityZoneHolder.set(zone);
@@ -126,7 +126,7 @@ class SystemDeletableTest {
             for (IdentityZone zone : Arrays.asList(this.zone, IdentityZone.getUaa())) {
                 resetDeletable();
                 IdentityZoneHolder.set(zone);
-                EntityDeletedEvent<UaaUser> event = new EntityDeletedEvent(user, authentication);
+                EntityDeletedEvent<UaaUser> event = new EntityDeletedEvent(user, authentication, IdentityZoneHolder.get());
                 deletable.onApplicationEvent(event);
                 verify(deletable, never()).deleteByIdentityZone(any());
                 verify(deletable, never()).deleteByOrigin(any(), any());
@@ -139,7 +139,7 @@ class SystemDeletableTest {
     @Test
     void mfa_event_received() {
         MfaProvider<GoogleMfaProviderConfig> mfaProvider = new MfaProvider<GoogleMfaProviderConfig>().setId("provider1");
-        EntityDeletedEvent<MfaProvider> event = new EntityDeletedEvent<>(mfaProvider, authentication);
+        EntityDeletedEvent<MfaProvider> event = new EntityDeletedEvent<>(mfaProvider, authentication, IdentityZoneHolder.get());
         deletable.onApplicationEvent(event);
         verify(deletable, never()).deleteByIdentityZone(any());
         verify(deletable, never()).deleteByOrigin(any(), any());

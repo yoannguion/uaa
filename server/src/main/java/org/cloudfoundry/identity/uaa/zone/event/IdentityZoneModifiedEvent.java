@@ -26,8 +26,8 @@ public class IdentityZoneModifiedEvent extends AbstractUaaEvent {
 
     protected static final String dataFormat = "id=%s; subdomain=%s";
 
-    public IdentityZoneModifiedEvent(IdentityZone identityZone, Authentication authentication, AuditEventType type) {
-        super(identityZone, authentication);
+    public IdentityZoneModifiedEvent(IdentityZone identityZoneModified, Authentication authentication, AuditEventType type, IdentityZone currentIdentityZone) {
+        super(identityZoneModified, authentication, currentIdentityZone);
         eventType = type;
     }
 
@@ -44,14 +44,16 @@ public class IdentityZoneModifiedEvent extends AbstractUaaEvent {
         );
     }
 
-    public static IdentityZoneModifiedEvent identityZoneCreated(IdentityZone identityZone) {
-        return new IdentityZoneModifiedEvent(identityZone, getContextAuthentication(),
-                AuditEventType.IdentityZoneCreatedEvent);
+    public static IdentityZoneModifiedEvent identityZoneCreated(IdentityZone modifiedIdentityZone, IdentityZone currentIdentityZone) {
+        return new IdentityZoneModifiedEvent(modifiedIdentityZone, getContextAuthentication(),
+                AuditEventType.IdentityZoneCreatedEvent,
+                currentIdentityZone);
     }
 
-    public static IdentityZoneModifiedEvent identityZoneModified(IdentityZone identityZone) {
+    public static IdentityZoneModifiedEvent identityZoneModified(IdentityZone identityZone, IdentityZone currentIdentityZone) {
         return new IdentityZoneModifiedEvent(identityZone, getContextAuthentication(),
-                AuditEventType.IdentityZoneModifiedEvent);
+                AuditEventType.IdentityZoneModifiedEvent,
+                currentIdentityZone);
     }
 
     public AuditEventType getEventType() {

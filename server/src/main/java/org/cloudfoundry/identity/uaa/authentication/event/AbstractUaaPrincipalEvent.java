@@ -14,14 +14,15 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.authentication.UaaAuthenticationDetails;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 
 /**
  * @author Dave Syer
  */
 abstract class AbstractUaaPrincipalEvent extends AbstractUaaEvent {
 
-    AbstractUaaPrincipalEvent(UaaAuthenticationDetails details) {
-        super(details);
+    AbstractUaaPrincipalEvent(UaaAuthenticationDetails details, IdentityZone identityZone) {
+        super(details, identityZone);
     }
 
     protected String getOrigin(UaaAuthenticationDetails details) {

@@ -130,7 +130,7 @@ public class JdbcApprovalStore implements ApprovalStore, ApplicationEventPublish
             if (count == 0) throw new EmptyResultDataAccessException("Approval add failed", 1);
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        publish(new ApprovalModifiedEvent(approval, authentication));
+        publish(new ApprovalModifiedEvent(approval, authentication, IdentityZoneHolder.get()));
         return true;
     }
 

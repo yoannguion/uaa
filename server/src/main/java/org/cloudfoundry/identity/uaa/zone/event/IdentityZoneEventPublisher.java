@@ -13,6 +13,7 @@
 package org.cloudfoundry.identity.uaa.zone.event;
 
 import org.cloudfoundry.identity.uaa.zone.IdentityZone;
+import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -26,11 +27,11 @@ public class IdentityZoneEventPublisher implements ApplicationEventPublisherAwar
     }
 
     public void identityZoneCreated(IdentityZone identityZone) {
-        publish(IdentityZoneModifiedEvent.identityZoneCreated(identityZone));
+        publish(IdentityZoneModifiedEvent.identityZoneCreated(identityZone, IdentityZoneHolder.get()));
     }
 
     public void identityZoneModified(IdentityZone identityZone) {
-        publish(IdentityZoneModifiedEvent.identityZoneModified(identityZone));
+        publish(IdentityZoneModifiedEvent.identityZoneModified(identityZone, IdentityZoneHolder.get()));
     }
 
     public void publish(ApplicationEvent event) {

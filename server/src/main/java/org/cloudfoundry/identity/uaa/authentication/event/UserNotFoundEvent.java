@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.crypto.codec.Utf8;
@@ -29,8 +30,8 @@ import org.springframework.security.crypto.codec.Utf8;
  */
 public class UserNotFoundEvent extends AbstractUaaAuthenticationEvent {
 
-    public UserNotFoundEvent(Authentication authentication) {
-        super(authentication);
+    public UserNotFoundEvent(Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,39 +38,42 @@ public class GroupModifiedEvent extends AbstractUaaEvent {
     private String[] members;
     private AuditEventType eventType;
 
-    protected GroupModifiedEvent(String groupId, String name, String[] members, AuditEventType type, Authentication authentication) {
-        super(authentication);
+    protected GroupModifiedEvent(String groupId, String name, String[] members, AuditEventType type, Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.groupId = groupId;
         this.groupName = name;
         this.members = members;
         this.eventType = type;
     }
 
-    public static GroupModifiedEvent groupCreated(String group, String name, String[] members) {
+    public static GroupModifiedEvent groupCreated(String group, String name, String[] members, IdentityZone identityZone) {
         return new GroupModifiedEvent(
             group,
             name,
             members,
             AuditEventType.GroupCreatedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static GroupModifiedEvent groupModified(String group, String name, String[] members) {
+    public static GroupModifiedEvent groupModified(String group, String name, String[] members, IdentityZone identityZone) {
         return new GroupModifiedEvent(
             group,
             name,
             members,
             AuditEventType.GroupModifiedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static GroupModifiedEvent groupDeleted(String group, String name, String[] members) {
+    public static GroupModifiedEvent groupDeleted(String group, String name, String[] members, IdentityZone identityZone) {
         return new GroupModifiedEvent(
             group,
             name,
             members,
             AuditEventType.GroupDeletedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
     @Override

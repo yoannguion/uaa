@@ -20,6 +20,7 @@ import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.user.UaaUserPrototype;
 import org.cloudfoundry.identity.uaa.zone.IdentityZone;
+import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.core.Authentication;
@@ -87,7 +88,7 @@ public class EntityDeletedEventTest {
     }
 
     public void evalute(Object o, String expected) {
-        EntityDeletedEvent event = new EntityDeletedEvent(o, mock(Authentication.class));
+        EntityDeletedEvent event = new EntityDeletedEvent(o, mock(Authentication.class), IdentityZoneHolder.get());
         assertEquals(expected, event.getAuditEvent().getData());
     }
 }

@@ -48,20 +48,22 @@ import static org.springframework.util.StringUtils.hasText;
 public abstract class AbstractUaaEvent extends ApplicationEvent {
 
     private static final long serialVersionUID = -7639844193401892160L;
-    private transient final IdentityZone identityZone = IdentityZoneHolder.get();
+    private transient final IdentityZone identityZone;
 
     private Authentication authentication;
 
-    protected AbstractUaaEvent(Object source) {
+    protected AbstractUaaEvent(Object source, IdentityZone identityZone) {
         super(source);
         if (source instanceof Authentication) {
             this.authentication = (Authentication)source;
         }
+        this.identityZone = identityZone;
     }
 
-    protected AbstractUaaEvent(Object source, Authentication authentication) {
+    protected AbstractUaaEvent(Object source, Authentication authentication, IdentityZone identityZone) {
         super(source);
         this.authentication = authentication;
+        this.identityZone = identityZone;
     }
 
     public void process(UaaAuditService auditor) {

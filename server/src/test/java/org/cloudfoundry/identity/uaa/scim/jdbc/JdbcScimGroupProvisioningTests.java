@@ -310,7 +310,7 @@ public class JdbcScimGroupProvisioningTests extends JdbcTestBase {
     public void test_that_uaa_scopes_are_bootstrapped_when_zone_is_created() {
         String id = generator.generate();
         IdentityZone zone = MultitenancyFixture.identityZone(id, "subdomain-" + id);
-        IdentityZoneModifiedEvent event = IdentityZoneModifiedEvent.identityZoneCreated(zone);
+        IdentityZoneModifiedEvent event = IdentityZoneModifiedEvent.identityZoneCreated(zone, IdentityZoneHolder.get());
         dao.onApplicationEvent(event);
         List<String> groups = dao.retrieveAll(id).stream().map(g -> g.getDisplayName()).collect(Collectors.toList());
         ZoneManagementScopes.getSystemScopes()

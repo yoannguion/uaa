@@ -18,13 +18,14 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.approval.Approval;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 
 public class ApprovalModifiedEvent extends AbstractUaaEvent {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ApprovalModifiedEvent(Object source, Authentication authentication) {
-        super(source, authentication);
+    public ApprovalModifiedEvent(Object source, Authentication authentication, IdentityZone identityZone) {
+        super(source, authentication, identityZone);
         if (!Approval.class.isAssignableFrom(source.getClass())) {
             throw new IllegalArgumentException();
         }

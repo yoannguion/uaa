@@ -15,6 +15,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.authentication.UaaAuthenticationDetails;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 
 /**
  * Event which indicates that a non-user principal tried to authenticate but was
@@ -26,8 +27,8 @@ public class PrincipalNotFoundEvent extends AbstractUaaPrincipalEvent {
 
     private String name;
 
-    public PrincipalNotFoundEvent(String name, UaaAuthenticationDetails details) {
-        super(details);
+    public PrincipalNotFoundEvent(String name, UaaAuthenticationDetails details, IdentityZone identityZone) {
+        super(details, identityZone);
         this.name = name;
     }
 

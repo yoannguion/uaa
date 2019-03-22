@@ -2,6 +2,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
 
@@ -18,8 +19,8 @@ public class IdentityProviderAuthenticationFailureEvent extends AbstractUaaAuthe
         return authenticationType;
     }
 
-    public IdentityProviderAuthenticationFailureEvent(Authentication authentication, String username, String authenticationType) {
-        super(authentication);
+    public IdentityProviderAuthenticationFailureEvent(Authentication authentication, String username, String authenticationType, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.username = username;
         this.authenticationType = authenticationType;
     }

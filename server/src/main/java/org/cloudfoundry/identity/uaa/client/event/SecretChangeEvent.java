@@ -14,13 +14,14 @@
 package org.cloudfoundry.identity.uaa.client.event;
 
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.ClientDetails;
 
 public class SecretChangeEvent extends AbstractClientAdminEvent {
 
-    public SecretChangeEvent(ClientDetails client, Authentication principal) {
-        super(client, principal);
+    public SecretChangeEvent(ClientDetails client, Authentication principal, IdentityZone identityZone) {
+        super(client, principal, identityZone);
     }
 
     @Override

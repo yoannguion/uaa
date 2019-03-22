@@ -18,6 +18,7 @@ package org.cloudfoundry.identity.uaa.account.event;
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 
 public class ResetPasswordRequestEvent extends AbstractUaaEvent {
@@ -25,8 +26,8 @@ public class ResetPasswordRequestEvent extends AbstractUaaEvent {
     private String code;
     private String email;
 
-    public ResetPasswordRequestEvent(String username, String email, String code, Authentication authentication) {
-        super(username, authentication);
+    public ResetPasswordRequestEvent(String username, String email, String code, Authentication authentication, IdentityZone identityZone) {
+        super(username, authentication, identityZone);
         this.code = code;
         this.email = email;
     }

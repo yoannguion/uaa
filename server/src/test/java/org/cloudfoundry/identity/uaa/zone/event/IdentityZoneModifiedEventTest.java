@@ -17,6 +17,7 @@ package org.cloudfoundry.identity.uaa.zone.event;
 
 import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneConfiguration;
+import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,12 +50,12 @@ public class IdentityZoneModifiedEventTest {
 
     @Test
     public void identityZoneCreated() throws Exception {
-        evaluteZoneAuditData(IdentityZoneModifiedEvent.identityZoneCreated(zone));
+        evaluteZoneAuditData(IdentityZoneModifiedEvent.identityZoneCreated(zone, IdentityZoneHolder.get()));
     }
 
     @Test
     public void identityZoneModified() throws Exception {
-        evaluteZoneAuditData(IdentityZoneModifiedEvent.identityZoneModified(zone));
+        evaluteZoneAuditData(IdentityZoneModifiedEvent.identityZoneModified(zone, IdentityZoneHolder.get()));
     }
 
     public void evaluteZoneAuditData(IdentityZoneModifiedEvent event) {

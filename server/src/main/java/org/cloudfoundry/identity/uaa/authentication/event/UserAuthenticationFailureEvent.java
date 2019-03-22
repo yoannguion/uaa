@@ -15,6 +15,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -27,8 +28,8 @@ import org.springframework.security.core.Authentication;
 public class UserAuthenticationFailureEvent extends AbstractUaaAuthenticationEvent {
     private final UaaUser user;
 
-    public UserAuthenticationFailureEvent(UaaUser user, Authentication authentication) {
-        super(authentication);
+    public UserAuthenticationFailureEvent(UaaUser user, Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.user = user;
     }
 

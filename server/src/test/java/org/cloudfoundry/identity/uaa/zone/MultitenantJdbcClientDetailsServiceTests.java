@@ -106,7 +106,7 @@ public class MultitenantJdbcClientDetailsServiceTests extends JdbcTestBase {
     @Test
     public void event_calls_delete_method() throws Exception {
         ClientDetails client = addClientToDb(generate.generate());
-        service.onApplicationEvent(new EntityDeletedEvent<>(client, mock(UaaAuthentication.class)));
+        service.onApplicationEvent(new EntityDeletedEvent<>(client, mock(UaaAuthentication.class), IdentityZoneHolder.get()));
         verify(service, times(1)).deleteByClient(eq(client.getClientId()), eq(IdentityZoneHolder.get().getId()));
     }
 
@@ -182,7 +182,7 @@ public class MultitenantJdbcClientDetailsServiceTests extends JdbcTestBase {
             assertThat(countClientsInZone(IdentityZoneHolder.get().getId()), is(1));
         }
 
-        service.onApplicationEvent(new EntityDeletedEvent<>(otherIdentityZone, null));
+        service.onApplicationEvent(new EntityDeletedEvent<>(otherIdentityZone, null, IdentityZoneHolder.get()));
         assertThat(countClientsInZone(otherIdentityZone.getId()), is(0));
     }
 
@@ -202,7 +202,7 @@ public class MultitenantJdbcClientDetailsServiceTests extends JdbcTestBase {
         String zoneId = IdentityZoneHolder.get().getId();
         assertThat(countClientsInZone(zoneId), is(1));
 
-        service.onApplicationEvent(new EntityDeletedEvent<>(IdentityZoneHolder.get(), null));
+        service.onApplicationEvent(new EntityDeletedEvent<>(IdentityZoneHolder.get(), null, IdentityZoneHolder.get()));
         assertThat(countClientsInZone(zoneId), is(1));
     }
 

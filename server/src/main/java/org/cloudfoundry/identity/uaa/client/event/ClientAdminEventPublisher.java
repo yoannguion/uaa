@@ -57,55 +57,55 @@ public class ClientAdminEventPublisher implements ApplicationEventPublisherAware
     }
 
     public void create(ClientDetails client) {
-        publish(new ClientCreateEvent(client, getPrincipal()));
+        publish(new ClientCreateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
     }
 
     public void createTx(ClientDetails[] clients) {
         for (ClientDetails client : clients) {
-            publish(new ClientCreateEvent(client, getPrincipal()));
+            publish(new ClientCreateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
         }
     }
 
     public void update(ClientDetails client) {
-        publish(new ClientUpdateEvent(client, getPrincipal()));
+        publish(new ClientUpdateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
     }
 
     public void updateTx(ClientDetails[] clients) {
         for (ClientDetails client:clients) {
-            publish(new ClientUpdateEvent(client, getPrincipal()));
+            publish(new ClientUpdateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
         }
     }
 
     public ClientDetails delete(ProceedingJoinPoint jp, String clientId) throws Throwable {
         ClientDetails client = (ClientDetails) jp.proceed();
-        publish(new ClientDeleteEvent(client, getPrincipal()));
+        publish(new ClientDeleteEvent(client, getPrincipal(), IdentityZoneHolder.get()));
         return client;
     }
 
     public void deleteTx(ClientDetails[] clients) {
         for (ClientDetails client:clients) {
-            publish(new ClientDeleteEvent(client, getPrincipal()));
+            publish(new ClientDeleteEvent(client, getPrincipal(), IdentityZoneHolder.get()));
         }
     }
 
     public void modifyTx(ClientDetailsModification[] clients) {
         for (ClientDetailsModification client:clients) {
             if (ClientDetailsModification.ADD.equals(client.getAction())) {
-                publish(new ClientCreateEvent(client, getPrincipal()));
+                publish(new ClientCreateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
             } else if (ClientDetailsModification.UPDATE.equals(client.getAction())) {
-                publish(new ClientUpdateEvent(client, getPrincipal()));
+                publish(new ClientUpdateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
             } else if (ClientDetailsModification.DELETE.equals(client.getAction())) {
-                publish(new ClientDeleteEvent(client, getPrincipal()));
+                publish(new ClientDeleteEvent(client, getPrincipal(), IdentityZoneHolder.get()));
             } else if (ClientDetailsModification.UPDATE_SECRET.equals(client.getAction())) {
-                publish(new ClientUpdateEvent(client, getPrincipal()));
+                publish(new ClientUpdateEvent(client, getPrincipal(), IdentityZoneHolder.get()));
                 if (client.isApprovalsDeleted()) {
-                    publish(new SecretChangeEvent(client, getPrincipal()));
-                    publish(new ClientApprovalsDeletedEvent(client, getPrincipal()));
+                    publish(new SecretChangeEvent(client, getPrincipal(), IdentityZoneHolder.get()));
+                    publish(new ClientApprovalsDeletedEvent(client, getPrincipal(), IdentityZoneHolder.get()));
                 }
             } else if (ClientDetailsModification.SECRET.equals(client.getAction())) {
                 if (client.isApprovalsDeleted()) {
-                    publish(new SecretChangeEvent(client, getPrincipal()));
-                    publish(new ClientApprovalsDeletedEvent(client, getPrincipal()));
+                    publish(new SecretChangeEvent(client, getPrincipal(), IdentityZoneHolder.get()));
+                    publish(new ClientApprovalsDeletedEvent(client, getPrincipal(), IdentityZoneHolder.get()));
                 }
             }
         }
@@ -113,19 +113,19 @@ public class ClientAdminEventPublisher implements ApplicationEventPublisherAware
 
     public void secretTx(ClientDetailsModification[] clients) {
         for (ClientDetailsModification client:clients) {
-            publish(new ClientDeleteEvent(client, getPrincipal()));
+            publish(new ClientDeleteEvent(client, getPrincipal(), IdentityZoneHolder.get()));
             if (client.isApprovalsDeleted()) {
-                publish(new ClientApprovalsDeletedEvent(client, getPrincipal()));
+                publish(new ClientApprovalsDeletedEvent(client, getPrincipal(), IdentityZoneHolder.get()));
             }
         }
     }
 
     public void secretFailure(String clientId, Exception e) {
-        publish(new SecretFailureEvent(e.getMessage(), getClient(clientId), getPrincipal()));
+        publish(new SecretFailureEvent(e.getMessage(), getClient(clientId), getPrincipal(), IdentityZoneHolder.get()));
     }
 
     public void secretChange(String clientId) {
-        publish(new SecretChangeEvent(getClient(clientId), getPrincipal()));
+        publish(new SecretChangeEvent(getClient(clientId), getPrincipal(), IdentityZoneHolder.get()));
     }
 
     private ClientDetails getClient(String clientId) {

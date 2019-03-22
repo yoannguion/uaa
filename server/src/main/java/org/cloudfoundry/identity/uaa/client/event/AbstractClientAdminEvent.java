@@ -16,6 +16,7 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
@@ -33,8 +34,8 @@ public abstract class AbstractClientAdminEvent extends AbstractUaaEvent {
 
     private ClientDetails client;
 
-    public AbstractClientAdminEvent(ClientDetails client, Authentication principal) {
-        super(principal);
+    public AbstractClientAdminEvent(ClientDetails client, Authentication principal, IdentityZone identityZone) {
+        super(principal, identityZone);
         this.client = client;
     }
 

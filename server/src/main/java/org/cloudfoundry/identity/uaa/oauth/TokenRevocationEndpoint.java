@@ -76,7 +76,7 @@ public class TokenRevocationEndpoint implements ApplicationEventPublisherAware {
         ScimUser user = userProvisioning.retrieve(userId, zoneId);
         user.setSalt(generator.generate());
         userProvisioning.update(userId, user, zoneId);
-        eventPublisher.publishEvent(new TokenRevocationEvent(userId, null, zoneId, SecurityContextHolder.getContext().getAuthentication()));
+        eventPublisher.publishEvent(new TokenRevocationEvent(userId, null, zoneId, SecurityContextHolder.getContext().getAuthentication(), IdentityZoneHolder.get()));
         logger.debug("Tokens revoked for user: " + userId);
         return new ResponseEntity<>(OK);
     }
@@ -89,7 +89,7 @@ public class TokenRevocationEndpoint implements ApplicationEventPublisherAware {
         for (RevocableToken token: tokens) {
             tokenProvisioning.delete(token.getTokenId(), -1, zoneId);
         }
-        eventPublisher.publishEvent(new TokenRevocationEvent(userId, clientId, zoneId, SecurityContextHolder.getContext().getAuthentication()));
+        eventPublisher.publishEvent(new TokenRevocationEvent(userId, clientId, zoneId, SecurityContextHolder.getContext().getAuthentication(), IdentityZoneHolder.get()));
         logger.debug("Tokens revoked for user " + userId + " and client " + clientId);
         return new ResponseEntity<>(OK);
     }
@@ -101,7 +101,7 @@ public class TokenRevocationEndpoint implements ApplicationEventPublisherAware {
         BaseClientDetails client = (BaseClientDetails)clientDetailsService.loadClientByClientId(clientId, zoneId);
         client.addAdditionalInformation(ClientConstants.TOKEN_SALT,generator.generate());
         clientDetailsService.updateClientDetails(client, zoneId);
-        eventPublisher.publishEvent(new TokenRevocationEvent(null, clientId, zoneId, SecurityContextHolder.getContext().getAuthentication()));
+        eventPublisher.publishEvent(new TokenRevocationEvent(null, clientId, zoneId, SecurityContextHolder.getContext().getAuthentication(), IdentityZoneHolder.get()));
         logger.debug("Tokens revoked for client: " + clientId);
         ((SystemDeletable)tokenProvisioning).deleteByClient(clientId, zoneId);
         return new ResponseEntity<>(OK);
@@ -112,7 +112,7 @@ public class TokenRevocationEndpoint implements ApplicationEventPublisherAware {
         logger.debug("Revoking token with ID:"+tokenId);
         String zoneId = IdentityZoneHolder.get().getId();
         RevocableToken revokedToken = tokenProvisioning.delete(tokenId, -1, zoneId);
-        eventPublisher.publishEvent(new TokenRevocationEvent(revokedToken.getUserId(), revokedToken.getClientId(), zoneId, SecurityContextHolder.getContext().getAuthentication()));
+        eventPublisher.publishEvent(new TokenRevocationEvent(revokedToken.getUserId(), revokedToken.getClientId(), zoneId, SecurityContextHolder.getContext().getAuthentication(), IdentityZoneHolder.get()));
         logger.debug("Revoked token with ID: " + tokenId);
         return new ResponseEntity<>(OK);
     }

@@ -275,7 +275,8 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
             publisher.publishEvent(
                 new EntityDeletedEvent<>(
                     user,
-                    SecurityContextHolder.getContext().getAuthentication()
+                    SecurityContextHolder.getContext().getAuthentication(),
+                    IdentityZoneHolder.get()
                 )
             );
             logger.debug("User delete event sent[" + userId + "]");
@@ -423,7 +424,7 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
 
 
         if(status.getLocked() != null && !status.getLocked()) {
-            publish(new UserAccountUnlockedEvent(user));
+            publish(new UserAccountUnlockedEvent(user, IdentityZoneHolder.get()));
         }
         if(status.isPasswordChangeRequired() != null && status.isPasswordChangeRequired()) {
             scimUserProvisioning.updatePasswordChangeRequired(userId, true, IdentityZoneHolder.get().getId());

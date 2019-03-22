@@ -14,6 +14,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -22,8 +23,8 @@ public class ClientAuthenticationFailureEvent extends AbstractUaaAuthenticationE
     private String clientId;
     private AuthenticationException ex;
 
-    public ClientAuthenticationFailureEvent(Authentication authentication, AuthenticationException ex) {
-        super(authentication);
+    public ClientAuthenticationFailureEvent(Authentication authentication, AuthenticationException ex, IdentityZone identityZone) {
+        super(authentication, identityZone);
         clientId = getAuthenticationDetails().getClientId();
         this.ex = ex;
     }

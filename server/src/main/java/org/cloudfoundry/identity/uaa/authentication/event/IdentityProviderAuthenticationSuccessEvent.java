@@ -16,6 +16,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
 
@@ -23,8 +24,8 @@ public class IdentityProviderAuthenticationSuccessEvent extends AbstractUaaAuthe
     private final UaaUser user;
     private final String authenticationType;
 
-    public IdentityProviderAuthenticationSuccessEvent(UaaUser user, Authentication authentication, String authenticationType) {
-        super(authentication);
+    public IdentityProviderAuthenticationSuccessEvent(UaaUser user, Authentication authentication, String authenticationType, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.user = user;
         this.authenticationType = authenticationType;
     }

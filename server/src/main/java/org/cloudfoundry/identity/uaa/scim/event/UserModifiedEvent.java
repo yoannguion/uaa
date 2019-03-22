@@ -19,6 +19,7 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 
 public class UserModifiedEvent extends AbstractUaaEvent {
@@ -30,60 +31,65 @@ public class UserModifiedEvent extends AbstractUaaEvent {
     private AuditEventType eventType;
 
 
-    protected UserModifiedEvent(String userId, String username, AuditEventType type, Authentication authentication) {
-        super(authentication);
+    protected UserModifiedEvent(String userId, String username, AuditEventType type, Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.userId = userId;
         this.username = username;
         this.eventType = type;
     }
 
-    protected UserModifiedEvent(String userId, String username, String email, AuditEventType type, Authentication authentication) {
-        super(authentication);
+    protected UserModifiedEvent(String userId, String username, String email, AuditEventType type, Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
         this.userId = userId;
         this.username = username;
         this.eventType = type;
         this.email = email;
     }
 
-    public static UserModifiedEvent userCreated(String userId, String username) {
+    public static UserModifiedEvent userCreated(String userId, String username, IdentityZone identityZone) {
         return new UserModifiedEvent(
             userId,
             username,
             AuditEventType.UserCreatedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static UserModifiedEvent userModified(String userId, String username) {
+    public static UserModifiedEvent userModified(String userId, String username, IdentityZone identityZone) {
         return new UserModifiedEvent(
             userId,
             username,
             AuditEventType.UserModifiedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static UserModifiedEvent userDeleted(String userId, String username) {
+    public static UserModifiedEvent userDeleted(String userId, String username, IdentityZone identityZone) {
         return new UserModifiedEvent(
             userId,
             username,
             AuditEventType.UserDeletedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static UserModifiedEvent userVerified(String userId, String username) {
+    public static UserModifiedEvent userVerified(String userId, String username, IdentityZone identityZone) {
         return new UserModifiedEvent(
             userId,
             username,
             AuditEventType.UserVerifiedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
-    public static UserModifiedEvent emailChanged(String userId, String username, String email) {
+    public static UserModifiedEvent emailChanged(String userId, String username, String email, IdentityZone identityZone) {
         return new UserModifiedEvent(
             userId,
             username,
             email,
             AuditEventType.EmailChangedEvent,
-            getContextAuthentication());
+            getContextAuthentication(),
+            identityZone);
     }
 
     @Override

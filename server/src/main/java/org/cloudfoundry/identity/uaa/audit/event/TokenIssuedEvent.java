@@ -17,6 +17,7 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.oauth.jwt.JwtHelper;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -26,8 +27,8 @@ import java.util.Map;
 public class TokenIssuedEvent extends AbstractUaaEvent {
 
 
-    public TokenIssuedEvent(OAuth2AccessToken source, Authentication principal) {
-        super(source, principal);
+    public TokenIssuedEvent(OAuth2AccessToken source, Authentication principal, IdentityZone identityZone) {
+        super(source, principal, identityZone);
         if (!OAuth2AccessToken.class.isAssignableFrom(source.getClass())) {
             throw new IllegalArgumentException();
         }

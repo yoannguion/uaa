@@ -3,6 +3,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
 
@@ -10,8 +11,8 @@ public class UnverifiedUserAuthenticationEvent extends AbstractUaaAuthentication
 
     private final UaaUser user;
 
-    public UnverifiedUserAuthenticationEvent(UaaUser user, Authentication authentication) {
-        super(authentication);
+    public UnverifiedUserAuthenticationEvent(UaaUser user, Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
         Assert.notNull(user, "UaaUser object cannot be null");
         this.user = user;
     }

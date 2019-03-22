@@ -88,7 +88,8 @@ public class AuthenticationSuccessListenerTests {
         user = new UaaUser(userPrototype);
         return new UserAuthenticationSuccessEvent(
             user,
-            mockAuth
+            mockAuth,
+            IdentityZoneHolder.get()
         );
     }
 
@@ -129,7 +130,8 @@ public class AuthenticationSuccessListenerTests {
         IdentityProviderAuthenticationSuccessEvent event = new IdentityProviderAuthenticationSuccessEvent(
             user,
             mockAuth,
-            OriginKeys.UAA
+            OriginKeys.UAA,
+            IdentityZoneHolder.get()
         );
         listener.onApplicationEvent(event);
         verify(publisher, times(1)).publishEvent(isA(UserAuthenticationSuccessEvent.class));
@@ -141,7 +143,8 @@ public class AuthenticationSuccessListenerTests {
         IdentityProviderAuthenticationSuccessEvent event = new IdentityProviderAuthenticationSuccessEvent(
             user,
             mockAuth,
-            OriginKeys.UAA
+            OriginKeys.UAA,
+            IdentityZoneHolder.get()
         );
         listener.onApplicationEvent(event);
         verifyZeroInteractions(publisher);
@@ -153,7 +156,8 @@ public class AuthenticationSuccessListenerTests {
         MfaAuthenticationSuccessEvent event = new MfaAuthenticationSuccessEvent(
             user,
             mockAuth,
-            "mfa-type"
+            "mfa-type",
+            IdentityZoneHolder.get()
         );
         listener.onApplicationEvent(event);
         verify(publisher, times(1)).publishEvent(isA(UserAuthenticationSuccessEvent.class));

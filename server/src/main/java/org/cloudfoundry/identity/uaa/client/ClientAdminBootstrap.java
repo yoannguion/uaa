@@ -294,7 +294,7 @@ public class ClientAdminBootstrap implements InitializingBean, ApplicationListen
             try {
                 ClientDetails client = clientRegistrationService.loadClientByClientId(clientId, IdentityZoneHolder.get().getId());
                 logger.debug("Deleting client from manifest:"+clientId);
-                EntityDeletedEvent<ClientDetails> delete = new EntityDeletedEvent<>(client, auth);
+                EntityDeletedEvent<ClientDetails> delete = new EntityDeletedEvent<>(client, auth, IdentityZoneHolder.get());
                 publish(delete);
             } catch (NoSuchClientException e) {
                 logger.debug("Ignoring delete for non existent client:"+clientId);

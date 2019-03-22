@@ -14,6 +14,7 @@ package org.cloudfoundry.identity.uaa.authentication.event;
 
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.authentication.UaaAuthenticationDetails;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -21,8 +22,8 @@ import org.springframework.security.core.Authentication;
  */
 public abstract class AbstractUaaAuthenticationEvent extends AbstractUaaEvent {
 
-    AbstractUaaAuthenticationEvent(Authentication authentication) {
-        super(authentication);
+    AbstractUaaAuthenticationEvent(Authentication authentication, IdentityZone identityZone) {
+        super(authentication, identityZone);
     }
 
     protected String getOrigin(UaaAuthenticationDetails details) {

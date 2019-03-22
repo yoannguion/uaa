@@ -17,6 +17,7 @@ package org.cloudfoundry.identity.uaa.audit.event;
 
 import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.ReflectionUtils;
 
@@ -28,8 +29,8 @@ public class EntityDeletedEvent<T> extends AbstractUaaEvent {
 
     protected static final String dataFormat = "Class:%s; ID:%s";
 
-    public EntityDeletedEvent(T deleted, Authentication authentication) {
-        super(deleted, authentication);
+    public EntityDeletedEvent(T deleted, Authentication authentication, IdentityZone identityZone) {
+        super(deleted, authentication, identityZone);
     }
 
     public T getDeleted() {
