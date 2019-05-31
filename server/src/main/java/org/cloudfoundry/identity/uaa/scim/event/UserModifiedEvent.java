@@ -65,15 +65,6 @@ public class UserModifiedEvent extends AbstractUaaEvent {
     private String[] buildDetails() {
         if (AuditEventType.UserCreatedEvent.equals(this.eventType)) {
 
-            // Not authenticated, e.g. when saml login creates a shadow user
-            if (!getContextAuthentication().isAuthenticated() || getContextAuthentication() instanceof AnonymousAuthenticationToken) {
-                return new String[]{
-                        "user_id=" + scimUser.getId(),
-                        "username=" + scimUser.getUserName(),
-                        "user_origin=" + scimUser.getOrigin()
-                };
-            }
-
             // Authenticated as a user
             if (getContextAuthentication().getPrincipal() instanceof UaaPrincipal) {
                 UaaPrincipal uaaPrincipal = (UaaPrincipal) getContextAuthentication().getPrincipal();
@@ -86,21 +77,23 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 };
             }
 
-            String zoneId = "<unknown>";
-
-            if (getContextAuthentication() instanceof UaaOauth2Authentication) {
-                final String tokenValue = ((UaaOauth2Authentication) getContextAuthentication()).getTokenValue();
-                final Claims claims = JsonUtils.readValue(JwtHelper.decode(tokenValue).getClaims(), Claims.class);
-                zoneId = ofNullable(claims).map(Claims::getZid).orElse("");
+            // Authenticated as a client
+            if (getContextAuthentication().isAuthenticated() && !(getContextAuthentication() instanceof AnonymousAuthenticationToken)) {
+                return new String[]{
+                        "user_id=" + scimUser.getId(),
+                        "username=" + scimUser.getUserName(),
+                        "user_origin=" + scimUser.getOrigin(),
+                        "performed_by=" + getClientZoneId() + "|" + getContextAuthentication().getPrincipal()
+                };
             }
 
-            // Authenticated as a client
+            // Not authenticated, e.g. when saml login creates a shadow user
             return new String[]{
                     "user_id=" + scimUser.getId(),
                     "username=" + scimUser.getUserName(),
-                    "user_origin=" + scimUser.getOrigin(),
-                    "performed_by=" + zoneId + "|" + getContextAuthentication().getPrincipal()
+                    "user_origin=" + scimUser.getOrigin()
             };
+
         } else if (AuditEventType.UserDeletedEvent.equals(this.eventType)) {
 
             // Authenticated as a user
@@ -128,6 +121,16 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 "user_id=" + scimUser.getId(),
                 "username=" + scimUser.getUserName()
         };
+    }
+
+    private String getClientZoneId() {
+        String zoneId = "<unknown>";
+        if (getContextAuthentication() instanceof UaaOauth2Authentication) {
+            final String tokenValue = ((UaaOauth2Authentication) getContextAuthentication()).getTokenValue();
+            final Claims claims = JsonUtils.readValue(JwtHelper.decode(tokenValue).getClaims(), Claims.class);
+            zoneId = ofNullable(claims).map(Claims::getZid).orElse("");
+        }
+        return zoneId;
     }
 
     public String getUserId() {
