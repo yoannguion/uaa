@@ -4,8 +4,14 @@ import org.cloudfoundry.identity.uaa.audit.AuditEvent;
 import org.cloudfoundry.identity.uaa.audit.AuditEventType;
 import org.cloudfoundry.identity.uaa.audit.event.AbstractUaaEvent;
 import org.cloudfoundry.identity.uaa.authentication.UaaPrincipal;
+import org.cloudfoundry.identity.uaa.oauth.UaaOauth2Authentication;
+import org.cloudfoundry.identity.uaa.oauth.jwt.JwtHelper;
+import org.cloudfoundry.identity.uaa.oauth.token.Claims;
 import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+
+import static java.util.Optional.ofNullable;
 
 public class UserModifiedEvent extends AbstractUaaEvent {
 
@@ -52,11 +58,15 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 data);
     }
 
+
+    /**
+     * TODO: use SecurityContextAccessor
+     */
     private String[] buildDetails() {
         if (AuditEventType.UserCreatedEvent.equals(this.eventType)) {
 
             // Not authenticated, e.g. when saml login creates a shadow user
-            if (!getContextAuthentication().isAuthenticated()) {
+            if (!getContextAuthentication().isAuthenticated() || getContextAuthentication() instanceof AnonymousAuthenticationToken) {
                 return new String[]{
                         "user_id=" + scimUser.getId(),
                         "username=" + scimUser.getUserName(),
@@ -72,9 +82,16 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                         "user_id=" + scimUser.getId(),
                         "username=" + scimUser.getUserName(),
                         "user_origin=" + scimUser.getOrigin(),
-                        "created_by_user_id=" + uaaPrincipal.getId(),
-                        "created_by_username=" + uaaPrincipal.getName()
+                        "performed_by=" + uaaPrincipal.getId() + "|" + uaaPrincipal.getName()
                 };
+            }
+
+            String zoneId = "<unknown>";
+
+            if (getContextAuthentication() instanceof UaaOauth2Authentication) {
+                final String tokenValue = ((UaaOauth2Authentication) getContextAuthentication()).getTokenValue();
+                final Claims claims = JsonUtils.readValue(JwtHelper.decode(tokenValue).getClaims(), Claims.class);
+                zoneId = ofNullable(claims).map(Claims::getZid).orElse("");
             }
 
             // Authenticated as a client
@@ -82,7 +99,7 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                     "user_id=" + scimUser.getId(),
                     "username=" + scimUser.getUserName(),
                     "user_origin=" + scimUser.getOrigin(),
-                    "created_by_client_id=" + getContextAuthentication().getPrincipal()
+                    "performed_by=" + zoneId + "|" + getContextAuthentication().getPrincipal()
             };
         } else if (AuditEventType.UserDeletedEvent.equals(this.eventType)) {
 

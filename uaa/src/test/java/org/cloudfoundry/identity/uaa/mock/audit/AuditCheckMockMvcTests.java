@@ -28,6 +28,8 @@ import org.cloudfoundry.identity.uaa.scim.event.UserModifiedEvent;
 import org.cloudfoundry.identity.uaa.scim.jdbc.JdbcScimUserProvisioning;
 import org.cloudfoundry.identity.uaa.test.*;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
+import org.cloudfoundry.identity.uaa.zone.IdentityZone;
+import org.cloudfoundry.identity.uaa.zone.IdentityZoneSwitchingFilter;
 import org.cloudfoundry.identity.uaa.zone.MultitenantClientServices;
 import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
 import org.junit.jupiter.api.AfterEach;
@@ -53,12 +55,10 @@ import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
-import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -76,8 +76,8 @@ import static org.cloudfoundry.identity.uaa.integration.util.IntegrationTestUtil
 import static org.cloudfoundry.identity.uaa.mock.util.MockMvcUtils.CookieCsrfPostProcessor.cookieCsrf;
 import static org.cloudfoundry.identity.uaa.mock.util.MockMvcUtils.httpBearer;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -107,7 +107,9 @@ class AuditCheckMockMvcTests {
 
     @Autowired
     private ConfigurableApplicationContext configurableApplicationContext;
+    @Autowired
     private MockMvc mockMvc;
+    @Autowired
     private TestClient testClient;
     @Autowired
     private IdentityZoneManager identityZoneManager;
@@ -120,16 +122,10 @@ class AuditCheckMockMvcTests {
     private Logger originalAuditServiceLogger;
 
     @Autowired
-    JdbcScimUserProvisioning jdbcScimUserProvisioning;
+    private JdbcScimUserProvisioning jdbcScimUserProvisioning;
 
     @BeforeEach
-    void setUp(@Autowired FilterChainProxy springSecurityFilterChain,
-               @Autowired WebApplicationContext webApplicationContext) throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .addFilter(springSecurityFilterChain)
-                .build();
-        testClient = new TestClient(mockMvc);
-
+    void setUp() throws Exception {
         originalLoginClient = clientRegistrationService.loadClientByClientId("login");
         testAccounts = UaaTestAccounts.standard(null);
         mockAuditService = mock(UaaAuditService.class);
@@ -774,7 +770,7 @@ class AuditCheckMockMvcTests {
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .session(new MockHttpSession())
-                .header("Authorization", "Bearer " + adminToken)
+                .with(httpBearer(adminToken))
                 .content(JsonUtils.writeValueAsBytes(scimUser));
 
         mockMvc.perform(userPost)
@@ -790,12 +786,106 @@ class AuditCheckMockMvcTests {
 
         ScimUser createdUser = jdbcScimUserProvisioning.retrieveAll(identityZoneManager.getCurrentIdentityZoneId())
                 .stream().filter(dbUser -> dbUser.getUserName().equals(scimUser.getUserName())).findFirst().get();
-        String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"created_by_client_id=%s\"]",
+        String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"performed_by=%s|%s\"]",
                 createdUser.getId(),
                 scimUser.getUserName(),
+                IdentityZone.getUaaZoneId(),
                 testAccounts.getAdminClientId());
         assertLogMessageWithSession(testLogger.getLatestMessage(),
                 UserCreatedEvent, createdUser.getId(), logMessage);
+    }
+
+    @Nested
+    @DefaultTestContext
+    @ExtendWith(ZoneSeederExtension.class)
+    class WithAnotherZone {
+
+        private ZoneSeeder zoneSeeder;
+        private MockHttpSession mockHttpSession;
+        private ScimUser scimUser;
+        private ClientDetails zoneAdminClient;
+        private String zoneAdminToken;
+
+        @BeforeEach
+        void setUp(final ZoneSeeder zoneSeeder) {
+            this.zoneSeeder = zoneSeeder
+                    .withDefaults()
+                    .withAdminClientWithClientCredentialsGrant()
+                    .afterSeeding(zs -> {
+                        zoneAdminClient = zs.getAdminClientWithClientCredentialsGrant();
+
+                        zoneAdminToken = testClient.getClientCredentialsOAuthAccessToken(
+                                zoneAdminClient.getClientId(),
+                                zoneSeeder.getPlainTextClientSecret(zoneAdminClient),
+                                "uaa.admin,scim.write",
+                                zoneSeeder.getIdentityZoneSubdomain()
+                        );
+
+                        resetAuditTestReceivers();
+                    });
+            scimUser = buildRandomScimUser();
+            mockHttpSession = new MockHttpSession();
+        }
+
+        @Test
+        void asAdminInUaaZone_createUserInAnotherZone_logsClientsZoneId() throws Exception {
+            MockHttpServletRequestBuilder userPost = post("/Users")
+                    .accept(APPLICATION_JSON_VALUE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(mockHttpSession)
+                    .with(httpBearer(adminToken))
+                    .header(IdentityZoneSwitchingFilter.HEADER, zoneSeeder.getIdentityZoneId())
+                    .content(JsonUtils.writeValueAsBytes(scimUser));
+
+            mockMvc.perform(userPost)
+                    .andExpect(status().isCreated());
+
+            assertNumberOfAuditEventsReceived(1);
+
+            ScimUser createdUser = jdbcScimUserProvisioning.retrieveAll(zoneSeeder.getIdentityZoneId())
+                    .stream().filter(dbUser -> dbUser.getUserName().equals(scimUser.getUserName())).findFirst().get();
+            String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"performed_by=%s|%s\"]",
+                    createdUser.getId(),
+                    scimUser.getUserName(),
+                    IdentityZone.getUaaZoneId(),
+                    "admin");
+            String actualLogMessage = testLogger.getLatestMessage();
+            assertThat(actualLogMessage, startsWith(UserCreatedEvent.toString() + " "));
+            assertThat(actualLogMessage, containsString(format("principal=%s,", createdUser.getId())));
+            assertThat(actualLogMessage, containsString(format(" ('%s'): ", logMessage)));
+            assertThat(actualLogMessage, containsString(format(", identityZoneId=[%s]", zoneSeeder.getIdentityZoneId())));
+            assertThat(actualLogMessage, matchesRegex(".*origin=\\[.*sessionId=<SESSION>.*\\].*"));
+        }
+
+        @Test
+        void asZoneAdmin_createUserInZone_logsClientsZoneId() throws Exception {
+            MockHttpServletRequestBuilder userPost = post("/Users")
+                    .accept(APPLICATION_JSON_VALUE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .session(mockHttpSession)
+                    .with(httpBearer(zoneAdminToken))
+                    .header("Host", zoneSeeder.getIdentityZoneSubdomain() + ".localhost")
+                    .content(JsonUtils.writeValueAsBytes(scimUser));
+
+            mockMvc.perform(userPost)
+                    .andExpect(status().isCreated());
+
+            assertNumberOfAuditEventsReceived(1);
+
+            ScimUser createdUser = jdbcScimUserProvisioning.retrieveAll(zoneSeeder.getIdentityZoneId())
+                    .stream().filter(dbUser -> dbUser.getUserName().equals(scimUser.getUserName())).findFirst().get();
+            String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"performed_by=%s|%s\"]",
+                    createdUser.getId(),
+                    scimUser.getUserName(),
+                    zoneSeeder.getIdentityZoneId(),
+                    zoneAdminClient.getClientId());
+            String actualLogMessage = testLogger.getLatestMessage();
+            assertThat(actualLogMessage, startsWith(UserCreatedEvent.toString() + " "));
+            assertThat(actualLogMessage, containsString(format("principal=%s,", createdUser.getId())));
+            assertThat(actualLogMessage, containsString(format(" ('%s'): ", logMessage)));
+            assertThat(actualLogMessage, containsString(format(", identityZoneId=[%s]", zoneSeeder.getIdentityZoneId())));
+            assertThat(actualLogMessage, matchesRegex(".*origin=\\[.*sessionId=<SESSION>.*\\].*"));
+        }
     }
 
     @Nested
@@ -853,7 +943,7 @@ class AuditCheckMockMvcTests {
             ScimUser createdUser = jdbcScimUserProvisioning.retrieveAll(zoneSeeder.getIdentityZoneId())
                     .stream().filter(dbUser -> dbUser.getUserName().equals(scimUser.getUserName())).findFirst().get();
 
-            String logMessage = format(" ('[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"created_by_user_id=%s\",\"created_by_username=%s\"]'): ",
+            String logMessage = format(" ('[\"user_id=%s\",\"username=%s\",\"user_origin=uaa\",\"performed_by=%s|%s\"]'): ",
                     createdUser.getId(),
                     scimUser.getUserName(),
                     scimWriteUser.getId(),
@@ -913,7 +1003,7 @@ class AuditCheckMockMvcTests {
     }
 
     @Test
-    void generateUserCreatedEvent_DuringLoginServerAuthorize() throws Exception {
+    void generateUserCreatedEvent_duringLoginServerAuthorize() throws Exception {
         clientRegistrationService.updateClientDetails(new BaseClientDetails("login", "oauth", "oauth.approvals", "authorization_code,password,client_credentials", "oauth.login", "http://localhost:8080/uaa"));
         String username = "jacob" + new RandomValueStringGenerator().generate();
         String loginToken = testClient.getClientCredentialsOAuthAccessToken(
@@ -954,9 +1044,10 @@ class AuditCheckMockMvcTests {
         ScimUser createdUser = jdbcScimUserProvisioning.retrieveAll(identityZoneManager.getCurrentIdentityZoneId())
                 .stream().filter(dbUser -> dbUser.getUserName().equals(username)).findFirst().get();
 
-        String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=login-server\",\"created_by_client_id=%s\"]",
+        String logMessage = format("[\"user_id=%s\",\"username=%s\",\"user_origin=login-server\",\"performed_by=%s|%s\"]",
                 createdUser.getId(),
                 username,
+                IdentityZone.getUaaZoneId(),
                 "login");
 
         assertLogMessageWithSession(testLogger.getMessageAtIndex(0),
