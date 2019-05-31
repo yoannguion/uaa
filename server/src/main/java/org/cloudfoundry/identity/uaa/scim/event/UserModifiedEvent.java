@@ -64,9 +64,7 @@ public class UserModifiedEvent extends AbstractUaaEvent {
      */
     private String[] buildDetails() {
         if (AuditEventType.UserCreatedEvent.equals(this.eventType)) {
-
-            // Authenticated as a user
-            if (getContextAuthentication().getPrincipal() instanceof UaaPrincipal) {
+            if (authenticatedAsUser()) {
                 UaaPrincipal uaaPrincipal = (UaaPrincipal) getContextAuthentication().getPrincipal();
 
                 return new String[]{
@@ -77,8 +75,7 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 };
             }
 
-            // Authenticated as a client
-            if (getContextAuthentication().isAuthenticated() && !(getContextAuthentication() instanceof AnonymousAuthenticationToken)) {
+            if (authenticatedAsClient()) {
                 return new String[]{
                         "user_id=" + scimUser.getId(),
                         "username=" + scimUser.getUserName(),
@@ -87,7 +84,7 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 };
             }
 
-            // Not authenticated, e.g. when saml login creates a shadow user
+            // Not authenticated: they are not logged in, or saml login is creating a shadow user
             return new String[]{
                     "user_id=" + scimUser.getId(),
                     "username=" + scimUser.getUserName(),
@@ -95,9 +92,7 @@ public class UserModifiedEvent extends AbstractUaaEvent {
             };
 
         } else if (AuditEventType.UserDeletedEvent.equals(this.eventType)) {
-
-            // Authenticated as a user
-            if (getContextAuthentication().getPrincipal() instanceof UaaPrincipal) {
+            if (authenticatedAsUser()) {
                 UaaPrincipal uaaPrincipal = (UaaPrincipal) getContextAuthentication().getPrincipal();
 
                 return new String[]{
@@ -121,6 +116,14 @@ public class UserModifiedEvent extends AbstractUaaEvent {
                 "user_id=" + scimUser.getId(),
                 "username=" + scimUser.getUserName()
         };
+    }
+
+    private boolean authenticatedAsUser() {
+        return getContextAuthentication().getPrincipal() instanceof UaaPrincipal;
+    }
+
+    private boolean authenticatedAsClient() {
+        return getContextAuthentication().isAuthenticated() && !(getContextAuthentication() instanceof AnonymousAuthenticationToken);
     }
 
     private String getClientZoneId() {
