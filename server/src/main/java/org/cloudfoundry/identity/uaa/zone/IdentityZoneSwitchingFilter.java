@@ -45,18 +45,18 @@ public class IdentityZoneSwitchingFilter extends OncePerRequestFilter {
     private final IdentityZoneProvisioning dao;
     public static final String HEADER = "X-Identity-Zone-Id";
     public static final String SUBDOMAIN_HEADER = "X-Identity-Zone-Subdomain";
-    public static final List<String> zoneScopestoNotStripPrefix = Collections.unmodifiableList(
+    private static final List<String> zoneScopestoNotStripPrefix = Collections.unmodifiableList(
          Arrays.asList(
             "admin",
             "read")
             );
 
-    protected OAuth2Authentication getAuthenticationForZone(String identityZoneId, HttpServletRequest servletRequest) {
+    private UaaOauth2Authentication getAuthenticationForZone(String identityZoneId, HttpServletRequest servletRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(!(authentication instanceof OAuth2Authentication)) {
+        if(!(authentication instanceof UaaOauth2Authentication)) {
             return null;
         }
-        OAuth2Authentication oa = (OAuth2Authentication) authentication;
+        UaaOauth2Authentication oa = (UaaOauth2Authentication) authentication;
 
         Object oaDetails = oa.getDetails();
 
@@ -96,12 +96,12 @@ public class IdentityZoneSwitchingFilter extends OncePerRequestFilter {
                 new UaaAuthenticationDetails(servletRequest),
                 true, userAuthentication.getAuthenticatedTime());
         }
-        oa = new UaaOauth2Authentication(((UaaOauth2Authentication)oa).getTokenValue(), IdentityZoneHolder.get().getId(), request, userAuthentication);
+        oa = new UaaOauth2Authentication(oa.getTokenValue(), IdentityZoneHolder.get().getId(), request, userAuthentication);
         oa.setDetails(oaDetails);
         return oa;
     }
 
-    protected String stripPrefix(String s, String identityZoneId) {
+    String stripPrefix(String s, String identityZoneId) {
         if (!StringUtils.hasText(s)) {
             return s;
         }
