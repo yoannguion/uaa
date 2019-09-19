@@ -23,7 +23,6 @@ import org.cloudfoundry.identity.uaa.oauth.approval.InMemoryApprovalStore;
 import org.cloudfoundry.identity.uaa.oauth.client.ClientConstants;
 import org.cloudfoundry.identity.uaa.oauth.openid.IdTokenCreator;
 import org.cloudfoundry.identity.uaa.oauth.openid.IdTokenGranter;
-import org.cloudfoundry.identity.uaa.oauth.refresh.RefreshTokenCreator;
 import org.cloudfoundry.identity.uaa.oauth.token.Claims;
 import org.cloudfoundry.identity.uaa.oauth.token.RevocableToken;
 import org.cloudfoundry.identity.uaa.oauth.token.RevocableTokenProvisioning;
@@ -36,7 +35,6 @@ import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.TimeService;
 import org.cloudfoundry.identity.uaa.zone.*;
 import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
-import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManagerImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,15 +59,12 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.*;
 
+import static junit.framework.Assert.assertEquals;
 import static org.cloudfoundry.identity.uaa.oauth.token.TokenConstants.TokenFormat.OPAQUE;
 import static org.junit.Assert.*;
 import static org.mockito.AdditionalMatchers.not;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(Parameterized.class)
 public class CheckTokenEndpointTests {
@@ -772,19 +768,23 @@ public class CheckTokenEndpointTests {
 
     @Test
     public void by_default_query_string_is_allowed() throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
         OAuth2AccessToken accessToken = tokenServices.createAccessToken(authentication);
         request.setQueryString("token="+ accessToken.getValue());
         request.setParameter("token", accessToken.getValue());
-        Claims claims = endpoint.checkToken(request);
+        Claims claims = endpoint.checkToken(request, response);
         assertNotNull(claims);
     }
 
     @Test
     public void by_default_get_is_allowed() throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
         OAuth2AccessToken accessToken = tokenServices.createAccessToken(authentication);
         request.setQueryString("token="+ accessToken.getValue());
         request.setParameter("token", accessToken.getValue());
-        endpoint.checkToken(request);
+        endpoint.checkToken(request, response);
     }
 
     @Test(expected = HttpRequestMethodNotSupportedException.class)
@@ -1003,4 +1003,17 @@ public class CheckTokenEndpointTests {
         Claims result = endpoint.checkToken(accessToken.getValue(), Collections.emptyList(), request);
         assertNull(result.getAzAttr());
     }
+
+    @Test
+    public void deprecation_header_is_set() throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        OAuth2AccessToken accessToken = tokenServices.createAccessToken(authentication);
+        request.setQueryString("token="+ accessToken.getValue());
+        request.setParameter("token", accessToken.getValue());
+        Claims claims = endpoint.checkToken(request, response);
+        assertEquals("Endpoint+deprecated", response.getHeader("X-Cf-Warnings"));
+    }
+
+
 }

@@ -12,14 +12,14 @@
  *******************************************************************************/
 package org.cloudfoundry.identity.uaa.oauth;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.cloudfoundry.identity.uaa.error.ParameterParsingException;
 import org.cloudfoundry.identity.uaa.error.UaaException;
 import org.cloudfoundry.identity.uaa.oauth.jwt.JwtHelper;
 import org.cloudfoundry.identity.uaa.oauth.token.Claims;
 import org.cloudfoundry.identity.uaa.util.JsonUtils;
 import org.cloudfoundry.identity.uaa.util.TimeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -145,10 +146,13 @@ public class CheckTokenEndpoint implements InitializingBean {
     @RequestMapping(value = "/check_token")
     @ResponseBody
     @Deprecated
-    public Claims checkToken(HttpServletRequest request) throws HttpRequestMethodNotSupportedException {
+    public Claims checkToken(HttpServletRequest request, HttpServletResponse response /* this broke more than expected */) throws HttpRequestMethodNotSupportedException {
+        response.setHeader("X-Cf-Warnings", "Endpoint+deprecated");
+
         if (isAllowQueryString()) {
             String token = request.getParameter("token");
             String scope = request.getParameter("scope");
+
             return
                 checkToken(
                     token,
