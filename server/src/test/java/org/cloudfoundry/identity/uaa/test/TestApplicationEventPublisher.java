@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationEventPublisher;
 public class TestApplicationEventPublisher<T extends ApplicationEvent> extends TestApplicationEventHandler<T> implements ApplicationEventPublisher {
 
     public static <K extends ApplicationEvent> TestApplicationEventPublisher<K> forEventClass(Class<K> eventType) {
-        return new TestApplicationEventPublisher<K>(eventType);
+        return new TestApplicationEventPublisher<>(eventType);
     }
 
     protected TestApplicationEventPublisher(Class<T> eventType) {

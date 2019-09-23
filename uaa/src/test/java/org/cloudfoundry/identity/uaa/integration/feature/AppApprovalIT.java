@@ -95,8 +95,8 @@ public class AppApprovalIT {
         ResponseEntity<SearchResults<ScimGroup>> getGroups = restTemplate.exchange(baseUrl + "/Groups?filter=displayName eq '{displayName}'",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<SearchResults<ScimGroup>>() {
-            },
+                new ParameterizedTypeReference<>() {
+                },
             "cloud_controller.read");
         ScimGroup group = getGroups.getBody().getResources().stream().findFirst().get();
 
@@ -167,8 +167,8 @@ public class AppApprovalIT {
         ResponseEntity<SearchResults<ScimGroup>> getGroups = restTemplate.exchange(baseUrl + "/Groups?filter=displayName eq '{displayName}'",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<SearchResults<ScimGroup>>() {
-            },
+                new ParameterizedTypeReference<>() {
+                },
             "cloud_controller.read");
         ScimGroup group = getGroups.getBody().getResources().stream().findFirst().get();
 

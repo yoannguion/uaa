@@ -166,7 +166,7 @@ class PasscodeMockMvcTests {
     @Test
     void testLoginUsingPasscodeWithUaaToken() throws Exception {
         UaaAuthenticationDetails details = new UaaAuthenticationDetails(new MockHttpServletRequest());
-        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa, new ArrayList<GrantedAuthority>(), details);
+        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa, new ArrayList<>(), details);
 
         final MockSecurityContext mockSecurityContext = new MockSecurityContext(uaaAuthentication);
 
@@ -232,7 +232,7 @@ class PasscodeMockMvcTests {
                 marissa.getId(),
                 marissa.getName(),
                 marissa.getEmail(),
-                new ArrayList<GrantedAuthority>()
+                new ArrayList<>()
         );
         final MockSecurityContext mockSecurityContext = new MockSecurityContext(userAuthentication);
 
@@ -256,7 +256,7 @@ class PasscodeMockMvcTests {
     @Test
     void testLoginUsingOldPasscode() throws Exception {
         UaaAuthenticationDetails details = new UaaAuthenticationDetails(new MockHttpServletRequest());
-        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa, new ArrayList<GrantedAuthority>(), details);
+        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa, new ArrayList<>(), details);
 
         final MockSecurityContext mockSecurityContext = new MockSecurityContext(uaaAuthentication);
 

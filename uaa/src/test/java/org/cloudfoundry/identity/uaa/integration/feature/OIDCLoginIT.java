@@ -395,7 +395,7 @@ public class OIDCLoginIT {
         assertNotNull(idToken);
 
         Jwt idTokenClaims = JwtHelper.decode(idToken);
-        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
         });
         String expectedUsername = (String) claims.get(SUB);
 
@@ -459,7 +459,7 @@ public class OIDCLoginIT {
             assertNotNull(idToken);
 
             Jwt idTokenClaims = JwtHelper.decode(idToken);
-            Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {
+            Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
             });
 
             assertNotNull("id_token should contain ACR claim", claims.get(ClaimConstants.ACR));

@@ -27,7 +27,7 @@ public class JsonWebKeyHelper {
         if (!s.contains("\"keys\"")) {
             return new JsonWebKeySet<>(Collections.singletonList(JsonUtils.readValue(s, JsonWebKey.class)));
         } else {
-            return JsonUtils.readValue(s, new TypeReference<JsonWebKeySet<JsonWebKey>>() {
+            return JsonUtils.readValue(s, new TypeReference<>() {
             });
         }
     }

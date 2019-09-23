@@ -253,7 +253,7 @@ public final class UaaTokenUtils {
 
         Map<String, Object> claims;
         try {
-            claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+            claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
             });
         } catch (JsonUtils.JsonUtilException ex) {
             throw new InvalidTokenException("Invalid token (cannot read token claims): " + jwtToken, ex);

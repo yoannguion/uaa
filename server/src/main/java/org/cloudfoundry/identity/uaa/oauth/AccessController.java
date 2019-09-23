@@ -137,7 +137,7 @@ public class AccessController {
                 }
             }
 
-            List<Approval> filteredApprovals = new ArrayList<Approval>();
+            List<Approval> filteredApprovals = new ArrayList<>();
             // Remove auto approved scopes
             List<Approval> approvals = approvalStore.getApprovals(Origin.getUserId((Authentication)principal), clientId, IdentityZoneHolder.get().getId());
             for (Approval approval : approvals) {
@@ -146,8 +146,8 @@ public class AccessController {
                 }
             }
 
-            ArrayList<String> approvedScopes = new ArrayList<String>();
-            ArrayList<String> deniedScopes = new ArrayList<String>();
+            ArrayList<String> approvedScopes = new ArrayList<>();
+            ArrayList<String> deniedScopes = new ArrayList<>();
 
             for (Approval approval : filteredApprovals) {
                 switch (approval.getStatus()) {
@@ -163,7 +163,7 @@ public class AccessController {
                 }
             }
 
-            ArrayList<String> undecidedScopes = new ArrayList<String>();
+            ArrayList<String> undecidedScopes = new ArrayList<>();
 
             // Filter the scopes approved/denied from the ones requested
             for (String scope : clientAuthRequest.getScope()) {
@@ -189,7 +189,7 @@ public class AccessController {
 
             model.put("message",
                             "To confirm or deny access POST to the following locations with the parameters requested.");
-            Map<String, Object> options = new HashMap<String, Object>() {
+            Map<String, Object> options = new HashMap<>() {
                 {
                     put("confirm", new HashMap<String, String>() {
                         {
@@ -220,9 +220,9 @@ public class AccessController {
 
     private List<Map<String, String>> getScopes(ArrayList<String> scopes) {
 
-        List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> result = new ArrayList<>();
         for (String scope : scopes) {
-            HashMap<String, String> map = new HashMap<String, String>();
+            HashMap<String, String> map = new HashMap<>();
             String code = SCOPE_PREFIX + scope;
             map.put("code", code);
 

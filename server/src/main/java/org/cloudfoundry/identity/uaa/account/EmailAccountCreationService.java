@@ -112,7 +112,7 @@ public class EmailAccountCreationService implements AccountCreationService {
             throw new HttpClientErrorException(BAD_REQUEST);
         }
 
-        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
         });
         ScimUser user = scimUserProvisioning.retrieve(data.get("user_id"), identityZoneManager.getCurrentIdentityZoneId());
         user = scimUserProvisioning.verifyUser(user.getId(), user.getVersion(), identityZoneManager.getCurrentIdentityZoneId());

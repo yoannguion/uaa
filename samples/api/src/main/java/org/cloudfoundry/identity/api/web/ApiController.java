@@ -119,7 +119,7 @@ public class ApiController {
             if (response.getContentType() == null) {
                 response.setContentType(getContentType());
             }
-            Map<String, Object> map = new HashMap<String, Object>(model);
+            Map<String, Object> map = new HashMap<>(model);
             map.put("path", request.getContextPath());
             context.setRootObject(map);
             String result = helper.replacePlaceholders(template, resolver);

@@ -140,7 +140,7 @@ public class PasswordChangeEndpointIntegrationTests {
     @OAuth2ContextConfiguration(resource = OAuth2ContextConfiguration.Implicit.class, initialize = false)
     public void testUserChangesOwnPassword() throws Exception {
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.set("source", "credentials");
         parameters.set("username", joe.getUserName());
         parameters.set("password", "pas5Word");
@@ -162,7 +162,7 @@ public class PasswordChangeEndpointIntegrationTests {
     @OAuth2ContextConfiguration(resource = OAuth2ContextConfiguration.Implicit.class, initialize = false)
     public void testUserMustSupplyOldPassword() throws Exception {
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.set("source", "credentials");
         parameters.set("username", joe.getUserName());
         parameters.set("password", "pas5Word");
@@ -189,7 +189,7 @@ public class PasswordChangeEndpointIntegrationTests {
         headers.set("Authorization",
                         testAccounts.getAuthorizationHeader("app", "appclientsecret"));
 
-        MultiValueMap<String, String> data = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.put("grant_type", Collections.singletonList("password"));
         data.put("username", Collections.singletonList(joe.getUserName()));
         data.put("password", Collections.singletonList("pas5Word"));
@@ -214,7 +214,7 @@ public class PasswordChangeEndpointIntegrationTests {
         PasswordChangeRequest change = new PasswordChangeRequest();
         change.setPassword("Newpasswo3d");
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.set("grant_type", "client_credentials");
         parameters.set("username", "admin");
         parameters.set("password", "adminsecret");
@@ -228,7 +228,7 @@ public class PasswordChangeEndpointIntegrationTests {
                         Void.class, joe.getId());
         assertEquals(HttpStatus.OK, passwordChangeResult.getStatusCode());
 
-        MultiValueMap<String, String> newData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> newData = new LinkedMultiValueMap<>();
         newData.put("grant_type", Collections.singletonList("password"));
         newData.put("username", Collections.singletonList(joe.getUserName()));
         newData.put("password", Collections.singletonList("Newpasswo3d"));

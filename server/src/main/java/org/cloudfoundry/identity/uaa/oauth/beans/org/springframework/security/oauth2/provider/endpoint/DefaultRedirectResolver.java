@@ -78,7 +78,7 @@ public class DefaultRedirectResolver implements RedirectResolver {
      * @param redirectGrantTypes the redirect grant types to set
      */
     public void setRedirectGrantTypes(Collection<String> redirectGrantTypes) {
-        this.redirectGrantTypes = new HashSet<String>(redirectGrantTypes);
+        this.redirectGrantTypes = new HashSet<>(redirectGrantTypes);
     }
 
     public String resolveRedirect(String requestedRedirect, ClientDetails client) throws OAuth2Exception {

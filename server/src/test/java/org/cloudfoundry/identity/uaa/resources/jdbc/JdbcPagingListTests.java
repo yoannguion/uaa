@@ -51,17 +51,17 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test
     public void testIterationOverPages() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo where id>=:id",
-                        Collections.<String, Object> singletonMap("id", 0), new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo where id>=:id",
+                Collections.<String, Object>singletonMap("id", 0), new ColumnMapRowMapper(), 3);
         assertEquals(5, list.size());
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (Map<String, Object> map : list) {
             String name = (String) map.get("name");
             assertNotNull(name);
             names.add(name);
         }
         assertEquals(5, names.size());
-        names = new HashSet<String>();
+        names = new HashSet<>();
         for (Map<String, Object> map : list) {
             String name = (String) map.get("name");
             assertNotNull(name);
@@ -72,11 +72,11 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test
     public void testIterationWithDeletedElements() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo where id>=:id",
-                        Collections.<String, Object> singletonMap("id", 0), new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo where id>=:id",
+                Collections.<String, Object>singletonMap("id", 0), new ColumnMapRowMapper(), 3);
         jdbcTemplate.update("DELETE from foo where id>3");
         assertEquals(5, list.size());
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (Map<String, Object> map : list) {
             String name = (String) map.get("name");
             assertNotNull(name);
@@ -87,10 +87,10 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test
     public void testOrderBy() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo order by id asc",
-                        Collections.<String, Object> singletonMap("id", 0), new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo order by id asc",
+                Collections.<String, Object>singletonMap("id", 0), new ColumnMapRowMapper(), 3);
         assertEquals(5, list.size());
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (Map<String, Object> map : list) {
             String name = (String) map.get("name");
             assertNotNull(name);
@@ -101,16 +101,16 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test
     public void testJumpOverPages() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
-                        new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
+                new ColumnMapRowMapper(), 3);
         Map<String, Object> map = list.get(3);
         assertNotNull(map.get("name"));
     }
 
     @Test
     public void testIterationOverSubList() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
-                        new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
+                new ColumnMapRowMapper(), 3);
         list = list.subList(1, 4);
         assertEquals(3, list.size());
         int count = 0;
@@ -123,8 +123,8 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test
     public void testIterationOverSubListWithSameSize() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
-                        new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
+                new ColumnMapRowMapper(), 3);
         list = list.subList(0, 5);
         assertEquals(5, list.size());
         int count = 0;
@@ -137,15 +137,15 @@ public class JdbcPagingListTests extends JdbcTestBase {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testSubListExtendsBeyondSize() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
-                        new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
+                new ColumnMapRowMapper(), 3);
         list.subList(1, 40);
     }
 
     @Test
     public void testSubListFromDeletedElements() throws Exception {
-        list = new JdbcPagingList<Map<String, Object>>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
-                        new ColumnMapRowMapper(), 3);
+        list = new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, "SELECT * from foo",
+                new ColumnMapRowMapper(), 3);
         jdbcTemplate.update("DELETE from foo where id>3");
         list = list.subList(1, list.size());
         assertEquals(4, list.size());

@@ -178,7 +178,7 @@ public class OpenIdTokenGrantsIT {
     private void validateToken(String paramName, Map params, String[] scopes, String[] aud) throws java.io.IOException {
         Jwt access_token = JwtHelper.decode((String)params.get(paramName));
 
-        Map<String, Object> claims = JsonUtils.readValue(access_token.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(access_token.getClaims(), new TypeReference<>() {
         });
 
         assertThat(claims.get("jti"), is(params.get("jti")));

@@ -22,7 +22,7 @@ public class JwtTokenUtils {
 
         Map<String, Object> claims;
         try {
-            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {
+            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<>() {
             });
         } catch (Exception e) {
             throw new IllegalStateException("Cannot read token claims", e);

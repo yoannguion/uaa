@@ -27,7 +27,8 @@ public class SamlRedirectLogoutHandler implements LogoutSuccessHandler {
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         RequestWrapper requestWrapper = new RequestWrapper(request);
         String relayState = request.getParameter("RelayState");
-        Map<String, String> params = JsonUtils.readValue(relayState, new TypeReference<Map<String, String>>() {});
+        Map<String, String> params = JsonUtils.readValue(relayState, new TypeReference<>() {
+        });
         if(params != null) {
             String redirect = params.get("redirect");
             if(StringUtils.hasText(redirect)) { requestWrapper.setParameter("redirect", redirect); }
@@ -61,7 +62,7 @@ public class SamlRedirectLogoutHandler implements LogoutSuccessHandler {
         }
 
         public Enumeration<String> getParameterNames() {
-            return new Enumeration<String>() {
+            return new Enumeration<>() {
                 Iterator<String> iterator = parameterMap.keySet().iterator();
 
                 @Override

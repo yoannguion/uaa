@@ -76,7 +76,8 @@ class CheckTokenEndpointMockMvcTest extends AbstractTokenMockMvcTests {
                 .contentType(APPLICATION_FORM_URLENCODED))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
-        Map<String,Object> tokenMap = JsonUtils.readValue(content, new TypeReference<Map<String, Object>>() {});
+        Map<String,Object> tokenMap = JsonUtils.readValue(content, new TypeReference<>() {
+        });
         token = (String) tokenMap.get("access_token");
         idToken = (String) tokenMap.get("id_token");
         basic = new String(Base64.encodeBase64((CLIENT_ID +":"+ CLIENT_SECRET).getBytes()));

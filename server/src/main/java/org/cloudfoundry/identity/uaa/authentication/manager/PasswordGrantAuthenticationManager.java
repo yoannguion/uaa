@@ -182,7 +182,9 @@ public class PasswordGrantAuthenticationManager implements AuthenticationManager
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         String idToken = null;
         try {
-            ResponseEntity<Map<String,String>> tokenResponse = rt.exchange(tokenUrl.toString(), HttpMethod.POST, request, new ParameterizedTypeReference<Map<String,String>>(){});
+            ResponseEntity<Map<String,String>> tokenResponse = rt.exchange(tokenUrl.toString(), HttpMethod.POST, request,
+                    new ParameterizedTypeReference<>() {
+                    });
 
             if (tokenResponse.hasBody()) {
                 Map<String, String> body = tokenResponse.getBody();

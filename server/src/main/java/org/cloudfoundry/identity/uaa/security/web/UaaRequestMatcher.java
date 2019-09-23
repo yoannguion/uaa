@@ -45,9 +45,9 @@ public final class UaaRequestMatcher implements RequestMatcher, BeanNameAware {
 
     private HttpMethod method;
 
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> parameters = new HashMap<>();
 
-    private Map<String, List<String>> expectedHeaders = new HashMap<String, List<String>>();
+    private Map<String, List<String>> expectedHeaders = new HashMap<>();
 
     private String name;
 

@@ -194,7 +194,7 @@ public class ClientAdminEndpointsValidator implements InitializingBean, ClientDe
                 }
             }
 
-            Set<String> validAuthorities = new HashSet<String>(NON_ADMIN_VALID_AUTHORITIES);
+            Set<String> validAuthorities = new HashSet<>(NON_ADMIN_VALID_AUTHORITIES);
             if (requestedGrantTypes.contains(GRANT_TYPE_CLIENT_CREDENTIALS)) {
                 // If client_credentials is used then the client might be a
                 // resource server

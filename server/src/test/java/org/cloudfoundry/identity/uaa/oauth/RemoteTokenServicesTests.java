@@ -40,7 +40,7 @@ public class RemoteTokenServicesTests {
 
     private RemoteTokenServices services = new RemoteTokenServices();
 
-    private Map<String, Object> body = new HashMap<String, Object>();
+    private Map<String, Object> body = new HashMap<>();
 
     private HttpHeaders headers = new HttpHeaders();
 
@@ -59,7 +59,7 @@ public class RemoteTokenServicesTests {
             @Override
             public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity,
                             Class<T> responseType, Object... uriVariables) throws RestClientException {
-                return new ResponseEntity<T>((T) body, headers, status);
+                return new ResponseEntity<>((T) body, headers, status);
             }
         });
     }

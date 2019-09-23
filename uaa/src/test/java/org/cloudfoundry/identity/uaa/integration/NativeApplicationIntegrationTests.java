@@ -61,7 +61,7 @@ public class NativeApplicationIntegrationTests {
     @Test
     public void testHappyDay() throws Exception {
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "password");
         formData.add("username", resource.getUsername());
         formData.add("password", resource.getPassword());
@@ -79,7 +79,7 @@ public class NativeApplicationIntegrationTests {
      */
     @Test
     public void testSecretRequired() throws Exception {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "password");
         formData.add("username", resource.getUsername());
         formData.add("password", resource.getPassword());

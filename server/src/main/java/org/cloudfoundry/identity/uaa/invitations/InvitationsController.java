@@ -133,7 +133,8 @@ public class InvitationsController {
 
         transferErrorParameters(model, request);
 
-        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {});
+        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         String origin = codeData.get(ORIGIN);
         try {
             IdentityProvider provider = providerProvisioning.retrieveByOrigin(origin, IdentityZoneHolder.get().getId());
@@ -272,7 +273,8 @@ public class InvitationsController {
             SecurityContextHolder.clearContext();
             return handleUnprocessableEntity(model, response, "error_message_code", "code_expired", "invitations/accept_invite");
         }
-        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String,String>>() {});
+        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         if (principal == null || data.get("user_id") == null || !data.get("user_id").equals(principal.getId())) {
             logger.debug("Failing invitation. Code and user ID mismatch.");
             SecurityContextHolder.clearContext();
@@ -307,7 +309,8 @@ public class InvitationsController {
 
     private String processErrorReload(String code, Model model, String email, HttpServletResponse response, String errorCode, String error) {
         ExpiringCode expiringCode = expiringCodeStore.retrieveCode(code, IdentityZoneHolder.get().getId());
-        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {});
+        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         try {
             String newCode = expiringCodeStore.generateCode(expiringCode.getData(), new Timestamp(System.currentTimeMillis() + (10 * 60 * 1000)), expiringCode.getIntent(), IdentityZoneHolder.get().getId()).getCode();
 
@@ -351,7 +354,8 @@ public class InvitationsController {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(token);
-            Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String,String>>() {});
+            Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+            });
             ScimUser user = userProvisioning.retrieve(data.get("user_id"), IdentityZoneHolder.get().getId());
             if (!user.getPrimaryEmail().equalsIgnoreCase(((ExtendedLdapUserDetails) authentication.getPrincipal()).getEmailAddress())) {
                 model.addAttribute("email", data.get("email"));

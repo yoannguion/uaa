@@ -55,7 +55,8 @@ public abstract class AbstractOAuth2AccessTokenMatchers<T> extends TypeSafeMatch
         assertNotNull(tokenJwt);
         Map<String, Object> claims;
         try {
-            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {});
+            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<>() {
+            });
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to decode token", e);
         }

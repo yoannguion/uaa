@@ -581,7 +581,8 @@ public class LoginInfoEndpointTests {
         LoginInfoEndpoint endpoint = getEndpoint();
         endpoint.setExpiringCodeStore(store);
         assertEquals("passcode", endpoint.generatePasscode(model, marissa));
-        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa, new ArrayList<GrantedAuthority>(),new UaaAuthenticationDetails(new MockHttpServletRequest()));
+        UaaAuthentication uaaAuthentication = new UaaAuthentication(marissa,
+                new ArrayList<>(),new UaaAuthenticationDetails(new MockHttpServletRequest()));
         assertEquals("passcode", endpoint.generatePasscode(model, uaaAuthentication));
         ExpiringUsernameAuthenticationToken expiringUsernameAuthenticationToken = new ExpiringUsernameAuthenticationToken(marissa,"");
         UaaAuthentication samlAuthenticationToken = new LoginSamlAuthenticationToken(marissa, expiringUsernameAuthenticationToken).getUaaAuthentication(emptyList(), emptySet(), new LinkedMultiValueMap<>());

@@ -279,7 +279,7 @@ public class UaaConfiguration {
                 return new AbstractConstruct() {
                     @Override
                     public Object construct(Node node) {
-                        return new ArrayList<Object>();
+                        return new ArrayList<>();
                     }
                 };
             }

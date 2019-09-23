@@ -21,10 +21,10 @@ import org.springframework.security.jwt.crypto.cipher.CipherMetadata;
  * @author Luke Taylor
  */
 public class JwtAlgorithms {
-    private static final Map<String,String> sigAlgs = new HashMap<String,String>();
-    private static final Map<String,String> javaToSigAlgs = new HashMap<String,String>();
-    private static final Map<String,String> keyAlgs = new HashMap<String,String>();
-    private static final Map<String,String> javaToKeyAlgs = new HashMap<String,String>();
+    private static final Map<String,String> sigAlgs = new HashMap<>();
+    private static final Map<String,String> javaToSigAlgs = new HashMap<>();
+    private static final Map<String,String> keyAlgs = new HashMap<>();
+    private static final Map<String,String> javaToKeyAlgs = new HashMap<>();
 
     static {
         sigAlgs.put("HS256", "HMACSHA256");

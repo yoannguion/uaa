@@ -40,7 +40,7 @@ public class UaaExceptionDeserializer extends JsonDeserializer<UaaException> {
         if (t == JsonToken.START_OBJECT) {
             t = jp.nextToken();
         }
-        Map<String, String> errorParams = new HashMap<String, String>();
+        Map<String, String> errorParams = new HashMap<>();
         for (; t == JsonToken.FIELD_NAME; t = jp.nextToken()) {
             // Must point to field name
             String fieldName = jp.getCurrentName();

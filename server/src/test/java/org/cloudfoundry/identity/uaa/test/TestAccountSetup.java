@@ -219,7 +219,7 @@ public class TestAccountSetup extends TestWatchman {
     }
 
     private List<? extends GrantedAuthority> extractAuthorities(Collection<Map<String, String>> groups) {
-        List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Map<String, String> group : groups) {
             String role = group.get("display");
             Assert.state(role != null, "Role is null in this group: " + group);
@@ -229,7 +229,7 @@ public class TestAccountSetup extends TestWatchman {
     }
 
     private Map<String, ?> getUserAsMap(UaaUser user) {
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        HashMap<String, Object> result = new HashMap<>();
         if (user.getId() != null) {
             result.put("id", user.getId());
         }
@@ -249,7 +249,7 @@ public class TestAccountSetup extends TestWatchman {
         }
         String givenName = user.getGivenName();
         if (givenName != null) {
-            Map<String, String> name = new HashMap<String, String>();
+            Map<String, String> name = new HashMap<>();
             name.put("givenName", givenName);
             if (user.getFamilyName() != null) {
                 name.put("familyName", user.getFamilyName());
@@ -281,7 +281,7 @@ public class TestAccountSetup extends TestWatchman {
             public void handleError(ClientHttpResponse response) throws IOException {
             }
         });
-        List<HttpMessageConverter<?>> list = new ArrayList<HttpMessageConverter<?>>();
+        List<HttpMessageConverter<?>> list = new ArrayList<>();
         list.add(new StringHttpMessageConverter());
         list.add(new MappingJackson2HttpMessageConverter());
         client.setMessageConverters(list);

@@ -320,7 +320,8 @@ public final class MockMvcUtils {
         MvcResult userResult = mockMvc.perform(get)
           .andExpect(status().isOk()).andReturn();
         SearchResults<ScimUser> results = JsonUtils.readValue(userResult.getResponse().getContentAsString(),
-            new TypeReference<SearchResults<ScimUser>>(){});
+                new TypeReference<>() {
+                });
         return results.getResources().get(0);
     }
 
@@ -884,8 +885,8 @@ public final class MockMvcUtils {
             .contentType(APPLICATION_JSON)
             .param("filter", filter))
             .andReturn().getResponse().getContentAsString(),
-          new TypeReference<SearchResults<ScimGroup>>() {
-          });
+                new TypeReference<>() {
+                });
         if (results == null || results.getResources() == null || results.getResources().isEmpty()) {
             return null;
         } else {

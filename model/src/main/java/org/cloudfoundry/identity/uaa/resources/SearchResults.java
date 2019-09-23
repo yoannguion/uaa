@@ -31,8 +31,8 @@ public class SearchResults<T> {
     public SearchResults() {}
     public SearchResults(Collection<String> schemas, Collection<T> resources, int startIndex, int itemsPerPage,
                     int totalResults) {
-        this.schemas = new ArrayList<String>(schemas);
-        this.resources = new ArrayList<T>(resources);
+        this.schemas = new ArrayList<>(schemas);
+        this.resources = new ArrayList<>(resources);
         this.startIndex = startIndex;
         this.itemsPerPage = itemsPerPage;
         this.totalResults = totalResults;

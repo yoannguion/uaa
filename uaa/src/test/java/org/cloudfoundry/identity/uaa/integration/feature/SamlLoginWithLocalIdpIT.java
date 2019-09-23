@@ -852,12 +852,13 @@ public class SamlLoginWithLocalIdpIT {
         headers.add("Authorization", "bearer " + zoneAdminToken);
         headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         headers.add(IdentityZoneSwitchingFilter.HEADER, zoneId);
-        HttpEntity<String> getHeaders = new HttpEntity<String>(headers);
+        HttpEntity<String> getHeaders = new HttpEntity<>(headers);
         ResponseEntity<String> providerGet = client.exchange(url + "/saml/service-providers", HttpMethod.GET, getHeaders,
           String.class);
         if (providerGet != null && providerGet.getStatusCode() == HttpStatus.OK) {
-            List<SamlServiceProvider> samlServiceProviders = JsonUtils.readValue(providerGet.getBody(), new TypeReference<List<SamlServiceProvider>>() {
-            });
+            List<SamlServiceProvider> samlServiceProviders = JsonUtils.readValue(providerGet.getBody(),
+                    new TypeReference<>() {
+                    });
             for(SamlServiceProvider sp : samlServiceProviders) {
                 deleteSamlServiceProvider(sp.getId(), zoneAdminToken, url, zoneId);
             }
@@ -870,7 +871,7 @@ public class SamlLoginWithLocalIdpIT {
         headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
         headers.add("Authorization", "bearer " + zoneAdminToken);
         headers.add(IdentityZoneSwitchingFilter.HEADER, zoneId);
-        HttpEntity<String> deleteHeaders = new HttpEntity<String>(headers);
+        HttpEntity<String> deleteHeaders = new HttpEntity<>(headers);
         client.exchange(url + "/saml/service-providers/" + id , HttpMethod.DELETE, deleteHeaders, String.class);
     }
 
@@ -1099,7 +1100,7 @@ public class SamlLoginWithLocalIdpIT {
                 if (p.getEntityId().equals(provider.getEntityId())
                   && p.getIdentityZoneId().equals(provider.getIdentityZoneId())) {
                     provider.setId(p.getId());
-                    HttpEntity<SamlServiceProvider> putHeaders = new HttpEntity<SamlServiceProvider>(provider, headers);
+                    HttpEntity<SamlServiceProvider> putHeaders = new HttpEntity<>(provider, headers);
                     ResponseEntity<String> providerPut = client.exchange(url + "/saml/service-providers/{id}",
                       HttpMethod.PUT, putHeaders, String.class, provider.getId());
                     if (providerPut.getStatusCode() == HttpStatus.OK) {
@@ -1109,7 +1110,7 @@ public class SamlLoginWithLocalIdpIT {
             }
         }
 
-        HttpEntity<SamlServiceProvider> postHeaders = new HttpEntity<SamlServiceProvider>(provider, headers);
+        HttpEntity<SamlServiceProvider> postHeaders = new HttpEntity<>(provider, headers);
         ResponseEntity<String> providerPost = client.exchange(url + "/saml/service-providers/{id}", HttpMethod.POST,
           postHeaders, String.class, provider.getId());
         if (providerPost.getStatusCode() == HttpStatus.CREATED) {
@@ -1126,11 +1127,11 @@ public class SamlLoginWithLocalIdpIT {
         headers.add("Authorization", "bearer " + zoneAdminToken);
         headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         headers.add(IdentityZoneSwitchingFilter.HEADER, zoneId);
-        HttpEntity<String> getHeaders = new HttpEntity<String>(headers);
+        HttpEntity<String> getHeaders = new HttpEntity<>(headers);
         ResponseEntity<String> providerGet = client.exchange(url + "/saml/service-providers", HttpMethod.GET, getHeaders,
           String.class);
         if (providerGet != null && providerGet.getStatusCode() == HttpStatus.OK) {
-            return JsonUtils.readValue(providerGet.getBody(), new TypeReference<List<SamlServiceProvider>>() {
+            return JsonUtils.readValue(providerGet.getBody(), new TypeReference<>() {
                 // Do nothing.
             });
         }

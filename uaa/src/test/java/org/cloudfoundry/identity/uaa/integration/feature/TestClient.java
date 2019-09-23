@@ -53,12 +53,12 @@ public class TestClient {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", getBasicAuthHeaderValue(username, password));
 
-        MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<>();
         postParameters.add("grant_type", grantType);
         postParameters.add("client_id", username);
         if(scope != null) { postParameters.add("scope", scope); }
 
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(postParameters, headers);
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(postParameters, headers);
 
         ResponseEntity<Map> exchange = restTemplate.exchange(baseUrl + "/oauth/token", HttpMethod.POST, requestEntity, Map.class);
 
@@ -113,7 +113,7 @@ public class TestClient {
         headers.add("Accept", "application/json");
         headers.add("Content-Type", "application/json");
 
-        HttpEntity<String> requestEntity = new HttpEntity<String>(json, headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
         ResponseEntity<Void> exchange = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Void.class);
         Assert.assertEquals(HttpStatus.CREATED, exchange.getStatusCode());
     }

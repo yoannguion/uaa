@@ -508,7 +508,7 @@ public class IntegrationTestUtils {
                 url + "/Groups?filter=displayName eq \"{groupId}\"",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                new ParameterizedTypeReference<SearchResults<ScimGroup>>() {
+                new ParameterizedTypeReference<>() {
                 },
                 displayName
         );
@@ -832,7 +832,7 @@ public class IntegrationTestUtils {
                 String.class
         );
         if (providerGet != null && providerGet.getStatusCode() == HttpStatus.OK) {
-            return JsonUtils.readValue(providerGet.getBody(), new TypeReference<List<IdentityProvider>>() {
+            return JsonUtils.readValue(providerGet.getBody(), new TypeReference<>() {
             });
         }
         return null;

@@ -72,7 +72,7 @@ public class TokenRevocationEndpointMockMvcTest extends AbstractTokenMockMvcTest
                     );
 
             Jwt jwt = JwtHelper.decode(clientToken);
-            Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+            Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
             });
             String jti = (String) claims.get("jti");
 

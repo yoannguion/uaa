@@ -619,7 +619,7 @@ public class XOAuthAuthenticationManagerIT {
     @Test
     public void test_single_key_response_without_value() throws Exception {
         String json = getKeyJson(PRIVATE_KEY, "correctKey", false);
-        Map<String, Object> map = JsonUtils.readValue(json, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> map = JsonUtils.readValue(json, new TypeReference<>() {
         });
         map.remove("value");
         json = JsonUtils.writeValueAsString(map);
@@ -632,9 +632,9 @@ public class XOAuthAuthenticationManagerIT {
     public void test_multi_key_response_without_value() throws Exception {
         String jsonValid = getKeyJson(PRIVATE_KEY, "correctKey", false);
         String jsonInvalid = getKeyJson(invalidRsaSigningKey, "invalidKey", false);
-        Map<String, Object> mapValid = JsonUtils.readValue(jsonValid, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> mapValid = JsonUtils.readValue(jsonValid, new TypeReference<>() {
         });
-        Map<String, Object> mapInvalid = JsonUtils.readValue(jsonInvalid, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> mapInvalid = JsonUtils.readValue(jsonInvalid, new TypeReference<>() {
         });
         mapValid.remove("value");
         mapInvalid.remove("value");
@@ -648,9 +648,9 @@ public class XOAuthAuthenticationManagerIT {
     public void test_multi_key_all_invalid() throws Exception {
         String jsonInvalid = getKeyJson(invalidRsaSigningKey, "invalidKey", false);
         String jsonInvalid2 = getKeyJson(invalidRsaSigningKey, "invalidKey2", false);
-        Map<String, Object> mapInvalid = JsonUtils.readValue(jsonInvalid, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> mapInvalid = JsonUtils.readValue(jsonInvalid, new TypeReference<>() {
         });
-        Map<String, Object> mapInvalid2 = JsonUtils.readValue(jsonInvalid2, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> mapInvalid2 = JsonUtils.readValue(jsonInvalid2, new TypeReference<>() {
         });
         String json = JsonUtils.writeValueAsString(new JsonWebKeySet<>(Arrays.asList(new JsonWebKey(mapInvalid), new JsonWebKey(mapInvalid2))));
         assertTrue(json.contains("\"invalidKey\""));

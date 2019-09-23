@@ -428,8 +428,9 @@ class IdentityProviderEndpointsMockMvcTests {
                 .contentType(APPLICATION_JSON);
 
         MvcResult result = mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityProvider>>() {
-        });
+        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
         assertEquals(numberOfIdps + 1, identityProviderList.size());
         assertTrue(identityProviderList.contains(newIdp));
     }
@@ -448,8 +449,9 @@ class IdentityProviderEndpointsMockMvcTests {
         requestBuilder.header(IdentityZoneSwitchingFilter.HEADER, identityZone.getId());
 
         MvcResult result = mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityProvider>>() {
-        });
+        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
         assertTrue(identityProviderList.contains(otherZoneIdp));
         assertEquals(2, identityProviderList.size());
     }
@@ -525,7 +527,7 @@ class IdentityProviderEndpointsMockMvcTests {
 
         String response = mvcResult.getResponse().getContentAsString();
         assertThat(response, not(containsString("relyingPartySecret")));
-        identityProvider = JsonUtils.readValue(response, new TypeReference<IdentityProvider<AbstractXOAuthIdentityProviderDefinition>>() {
+        identityProvider = JsonUtils.readValue(response, new TypeReference<>() {
         });
         assertTrue(identityProvider.getConfig().isClientAuthInBody());
 
@@ -543,7 +545,7 @@ class IdentityProviderEndpointsMockMvcTests {
         ).andExpect(status().isOk()).andReturn();
         response = mvcResult.getResponse().getContentAsString();
         assertThat(response, not(containsString("relyingPartySecret")));
-        identityProvider = JsonUtils.readValue(response, new TypeReference<IdentityProvider<AbstractXOAuthIdentityProviderDefinition>>() {
+        identityProvider = JsonUtils.readValue(response, new TypeReference<>() {
         });
         assertFalse(identityProvider.getConfig().isClientAuthInBody());
         assertFalse(
@@ -644,8 +646,9 @@ class IdentityProviderEndpointsMockMvcTests {
         int numberOfIdps = identityProviderProvisioning.retrieveAll(retrieveActive, IdentityZone.getUaaZoneId()).size();
 
         MvcResult result = mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityProvider>>() {
-        });
+        List<IdentityProvider> identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
         assertEquals(numberOfIdps, identityProviderList.size());
         assertTrue(identityProviderList.contains(createdIDP));
 
@@ -653,7 +656,7 @@ class IdentityProviderEndpointsMockMvcTests {
         createdIDP = JsonUtils.readValue(updateIdentityProvider(null, createdIDP, accessToken, status().isOk()).getResponse().getContentAsString(), IdentityProvider.class);
 
         result = mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityProvider>>() {
+        identityProviderList = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
         if (!retrieveActive) {
             assertEquals(numberOfIdps, identityProviderList.size());

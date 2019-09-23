@@ -93,7 +93,7 @@ public class EmailChangeEmailService implements ChangeEmailService {
             throw new UaaException("Error", 400);
         }
 
-        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> codeData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
         });
         String userId = codeData.get("user_id");
         String email = codeData.get("email");

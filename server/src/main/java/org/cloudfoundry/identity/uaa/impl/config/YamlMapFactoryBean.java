@@ -76,7 +76,7 @@ public class YamlMapFactoryBean extends YamlProcessor implements FactoryBean<Map
     }
 
     private Map<String, Object> doGetObject() {
-        final Map<String, Object> result = new LinkedHashMap<String, Object>();
+        final Map<String, Object> result = new LinkedHashMap<>();
         MatchCallback callback = new MatchCallback() {
             @Override
             public void process(Properties properties, Map<String, Object> map) {

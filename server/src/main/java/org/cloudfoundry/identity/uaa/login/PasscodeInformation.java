@@ -56,7 +56,7 @@ public class PasscodeInformation {
         setUserId(userId);
         setUsername(username);
         setPasscode(passcode);
-        authorizationParameters = new LinkedHashMap<String, Object>();
+        authorizationParameters = new LinkedHashMap<>();
         setSamlAuthorities(authorities);
         setOrigin(origin);
     }
@@ -75,7 +75,7 @@ public class PasscodeInformation {
 
     @JsonProperty("samlAuthorities")
     public ArrayList<SamlUserAuthority> getSamlAuthorities() {
-        ArrayList<SamlUserAuthority> list = new ArrayList<SamlUserAuthority>();
+        ArrayList<SamlUserAuthority> list = new ArrayList<>();
         if (authorizationParameters != null && authorizationParameters.containsKey("authorities")) {
             Set<SamlUserAuthority> set = (Set<SamlUserAuthority>) authorizationParameters.get("authorities");
             list.addAll(set);

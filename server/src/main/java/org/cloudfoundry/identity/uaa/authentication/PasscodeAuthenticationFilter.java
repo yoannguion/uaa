@@ -252,7 +252,7 @@ public class PasscodeAuthenticationFilter extends BackwardsCompatibleTokenEndpoi
         return null;
     }
     private Map<String, String> getCredentials(HttpServletRequest request) {
-        Map<String, String> credentials = new HashMap<String, String>();
+        Map<String, String> credentials = new HashMap<>();
 
         for (String paramName : parameterNames) {
             String value = request.getParameter(paramName);
@@ -260,8 +260,8 @@ public class PasscodeAuthenticationFilter extends BackwardsCompatibleTokenEndpoi
                 if (value.startsWith("{")) {
                     try {
                         Map<String, String> jsonCredentials = JsonUtils.readValue(value,
-                                        new TypeReference<Map<String, String>>() {
-                                        });
+                                new TypeReference<>() {
+                                });
                         credentials.putAll(jsonCredentials);
                     } catch (JsonUtils.JsonUtilException e) {
                         logger.warn("Unknown format of value for request param: " + paramName + ". Ignoring.");

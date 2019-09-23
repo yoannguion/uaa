@@ -25,8 +25,8 @@ import org.junit.Test;
  */
 public class UaaConfigurationTests {
 
-    private YamlConfigurationValidator<UaaConfiguration> validator = new YamlConfigurationValidator<UaaConfiguration>(
-                    new UaaConfiguration.UaaConfigConstructor());
+    private YamlConfigurationValidator<UaaConfiguration> validator = new YamlConfigurationValidator<>(
+            new UaaConfiguration.UaaConfigConstructor());
 
     private void createValidator(final String yaml) throws Exception {
         validator.setExceptionIfInvalid(true);

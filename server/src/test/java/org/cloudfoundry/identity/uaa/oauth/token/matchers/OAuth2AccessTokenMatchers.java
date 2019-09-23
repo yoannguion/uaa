@@ -98,7 +98,7 @@ public class OAuth2AccessTokenMatchers extends AbstractOAuth2AccessTokenMatchers
     }
 
     public static Matcher<OAuth2AccessToken> validFor(Matcher<?> validFor) {
-        return new AbstractOAuth2AccessTokenMatchers<OAuth2AccessToken>(validFor) {
+        return new AbstractOAuth2AccessTokenMatchers<>(validFor) {
 
             @Override
             protected boolean matchesSafely(OAuth2AccessToken token) {
@@ -117,7 +117,8 @@ public class OAuth2AccessTokenMatchers extends AbstractOAuth2AccessTokenMatchers
             protected void describeMismatchSafely(OAuth2AccessToken accessToken, Description mismatchDescription) {
                 if (accessToken != null) {
                     Map<String, Object> claims = getClaims(accessToken);
-                    mismatchDescription.appendText(" but was ").appendValue(((Integer) claims.get(ClaimConstants.EXP)) - ((Integer) claims.get(ClaimConstants.IAT)));
+                    mismatchDescription.appendText(" but was ").appendValue(((Integer) claims.get(ClaimConstants.EXP)) - ((Integer) claims.get(
+                            ClaimConstants.IAT)));
                 }
             }
         };

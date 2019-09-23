@@ -58,7 +58,7 @@ public class UaaTestAccounts implements TestAccounts {
 
     private Environment environment = TestProfileEnvironment.getEnvironment();
     private UrlHelper server;
-    private static Map<String, OAuth2ProtectedResourceDetails> clientDetails = new HashMap<String, OAuth2ProtectedResourceDetails>();
+    private static Map<String, OAuth2ProtectedResourceDetails> clientDetails = new HashMap<>();
 
     private UaaTestAccounts(UrlHelper server) {
         this.server = server;

@@ -117,7 +117,8 @@ public class ContextSensitiveOAuth2SecurityExpressionMethods extends OAuth2Secur
         }
         Map<String, Object> claims;
         try {
-            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {});
+            claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<>() {
+            });
         } catch (JsonUtils.JsonUtilException e) {
             throw new IllegalStateException("Cannot read token claims", e);
         }

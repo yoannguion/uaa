@@ -110,7 +110,7 @@ public class RestAuthenticationManager implements AuthenticationManager {
 
         @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = restTemplate.exchange(remoteUrl, HttpMethod.POST,
-                        new HttpEntity<Object>(getParameters(username, password), headers), Map.class);
+                new HttpEntity<>(getParameters(username, password), headers), Map.class);
 
         if (response.getStatusCode() == HttpStatus.OK || response.getStatusCode() == HttpStatus.CREATED) {
             if (evaluateResponse(authentication,response)) {
@@ -135,7 +135,7 @@ public class RestAuthenticationManager implements AuthenticationManager {
     }
 
     protected Object getParameters(String username, String password) {
-        MultiValueMap<String, Object> parameters = new LinkedMaskingMultiValueMap<String, Object>("password");
+        MultiValueMap<String, Object> parameters = new LinkedMaskingMultiValueMap<>("password");
         parameters.set("username", username);
         parameters.set("password", password);
         return parameters;

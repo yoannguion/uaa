@@ -50,7 +50,7 @@ public class InvalidPasswordException extends ScimException {
     }
 
     public String getMessagesAsOneString() {
-        ArrayList<String> sortedMessages = new ArrayList<String>(errorMessages);
+        ArrayList<String> sortedMessages = new ArrayList<>(errorMessages);
         Collections.sort(sortedMessages);
         return StringUtils.collectionToDelimitedString(sortedMessages, " ");
     }

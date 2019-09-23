@@ -96,7 +96,7 @@ public class CfUserIdTranslationEndpointIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         ResponseEntity<Void> result = client
                         .exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-                                        HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers),
+                                        HttpMethod.PUT, new HttpEntity<>(change, headers),
                                         Void.class, joe.getId());
         assertEquals(HttpStatus.OK, result.getStatusCode());
 

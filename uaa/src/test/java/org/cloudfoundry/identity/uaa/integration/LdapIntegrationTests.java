@@ -172,7 +172,8 @@ public class LdapIntegrationTests {
         assertNotNull(idToken);
 
         Jwt idTokenClaims = JwtHelper.decode(idToken);
-        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
+        });
 
         assertNotNull(claims.get(ClaimConstants.USER_ATTRIBUTES));
         Map<String,List<String>> userAttributes = (Map<String, List<String>>) claims.get(ClaimConstants.USER_ATTRIBUTES);
@@ -197,7 +198,8 @@ public class LdapIntegrationTests {
         assertNotNull(idToken);
 
         idTokenClaims = JwtHelper.decode(idToken);
-        claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {});
+        claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
+        });
         assertNull(claims.get(ClaimConstants.USER_ATTRIBUTES));
         assertNull(claims.get(ClaimConstants.ROLES));
 

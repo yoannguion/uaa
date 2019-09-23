@@ -52,22 +52,22 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
 
     private final Map<K, List<V>> targetMap;
 
-    private final Set<K> maskedAttributeSet = new HashSet<K>();
+    private final Set<K> maskedAttributeSet = new HashSet<>();
 
     /**
      * Create a new LinkedMultiValueMap that wraps a {@link java.util.LinkedHashMap}.
      */
     public LinkedMaskingMultiValueMap() {
-        this.targetMap = new LinkedHashMap<K, List<V>>();
+        this.targetMap = new LinkedHashMap<>();
     }
 
     public LinkedMaskingMultiValueMap(K maskedAttribute) {
-        this.targetMap = new LinkedHashMap<K, List<V>>();
+        this.targetMap = new LinkedHashMap<>();
         this.maskedAttributeSet.add(maskedAttribute);
     }
 
     public LinkedMaskingMultiValueMap(K... maskedAttribute) {
-        this.targetMap = new LinkedHashMap<K, List<V>>();
+        this.targetMap = new LinkedHashMap<>();
         this.maskedAttributeSet.addAll(Arrays.asList(maskedAttribute));
     }
 
@@ -75,7 +75,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
      * Create a new LinkedMultiValueMap that wraps a {@link java.util.LinkedHashMap}.
      */
     public LinkedMaskingMultiValueMap(Set<K> maskedAttributes) {
-        this.targetMap = new LinkedHashMap<K, List<V>>();
+        this.targetMap = new LinkedHashMap<>();
         this.maskedAttributeSet.addAll(maskedAttributes);
     }
 
@@ -86,7 +86,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
      * @param initialCapacity the initial capacity
      */
     public LinkedMaskingMultiValueMap(int initialCapacity) {
-        this.targetMap = new LinkedHashMap<K, List<V>>(initialCapacity);
+        this.targetMap = new LinkedHashMap<>(initialCapacity);
     }
 
     /**
@@ -96,7 +96,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
      * @param otherMap the Map whose mappings are to be placed in this Map
      */
     public LinkedMaskingMultiValueMap(Map<K, List<V>> otherMap) {
-        this.targetMap = new LinkedHashMap<K, List<V>>(otherMap);
+        this.targetMap = new LinkedHashMap<>(otherMap);
     }
 
     // masked attributes
@@ -107,7 +107,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
     public void add(K key, V value) {
         List<V> values = this.targetMap.get(key);
         if (values == null) {
-            values = new LinkedList<V>();
+            values = new LinkedList<>();
             this.targetMap.put(key, values);
         }
         values.add(value);
@@ -135,7 +135,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
 
     @Override
     public void set(K key, V value) {
-        List<V> values = new LinkedList<V>();
+        List<V> values = new LinkedList<>();
         values.add(value);
         this.targetMap.put(key, values);
     }
@@ -149,7 +149,7 @@ public class LinkedMaskingMultiValueMap<K, V> implements MultiValueMap<K, V>, Se
 
     @Override
     public Map<K, V> toSingleValueMap() {
-        LinkedHashMap<K, V> singleValueMap = new LinkedHashMap<K, V>(this.targetMap.size());
+        LinkedHashMap<K, V> singleValueMap = new LinkedHashMap<>(this.targetMap.size());
         for (Entry<K, List<V>> entry : targetMap.entrySet()) {
             singleValueMap.put(entry.getKey(), entry.getValue().get(0));
         }

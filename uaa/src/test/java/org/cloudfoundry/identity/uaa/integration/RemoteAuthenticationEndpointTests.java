@@ -173,7 +173,7 @@ public class RemoteAuthenticationEndpointTests {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
+        MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
         parameters.set("username", username);
         if (password!=null) {
             parameters.set("password", password);

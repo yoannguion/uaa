@@ -965,7 +965,7 @@ public class ScimGroupEndpointsMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        List<Object> listMembers = JsonUtils.readValue(responseContent, new TypeReference<List<Object>>() {
+        List<Object> listMembers = JsonUtils.readValue(responseContent, new TypeReference<>() {
         });
         Set<String> retrievedMembers = listMembers.stream().map(o -> JsonUtils.writeValueAsString(o)).collect(Collectors.toSet());
 
@@ -999,7 +999,7 @@ public class ScimGroupEndpointsMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        List<Object> listMembers = JsonUtils.readValue(responseContent, new TypeReference<List<Object>>() {
+        List<Object> listMembers = JsonUtils.readValue(responseContent, new TypeReference<>() {
         });
         Set<String> retrievedMembers = listMembers.stream().map(o -> JsonUtils.writeValueAsString(o)).collect(Collectors.toSet());
 
@@ -1228,7 +1228,7 @@ public class ScimGroupEndpointsMockMvcTests {
         result.andExpect(status().is(status.value()));
         if (status.equals(HttpStatus.OK)) {
             String content = result.andReturn().getResponse().getContentAsString();
-            Map<String, Object> map = JsonUtils.readValue(content, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> map = JsonUtils.readValue(content, new TypeReference<>() {
             });
             return (List<Map<String, String>>) map.get("resources");
         } else {

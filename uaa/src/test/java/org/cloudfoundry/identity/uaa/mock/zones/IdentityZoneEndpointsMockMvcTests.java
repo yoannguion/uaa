@@ -396,8 +396,9 @@ class IdentityZoneEndpointsMockMvcTests {
                 .andReturn();
 
 
-        List<IdentityZone> zones = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityZone>>() {
-        });
+        List<IdentityZone> zones = JsonUtils.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
         IdentityZone retrieved = null;
         for (IdentityZone identityZone : zones) {
             if (identityZone.getId().equals(id)) {
@@ -1842,8 +1843,9 @@ class IdentityZoneEndpointsMockMvcTests {
                 .andReturn();
 
         //test read your own zone only
-        List<IdentityZone> zones = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<List<IdentityZone>>() {
-        });
+        List<IdentityZone> zones = JsonUtils.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
         assertEquals(1, zones.size());
         assertEquals(zone1, zones.get(0).getSubdomain());
 
@@ -2022,7 +2024,7 @@ class IdentityZoneEndpointsMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        IdentityZone zoneResult = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<IdentityZone>() {
+        IdentityZone zoneResult = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
         assertEquals(identityZone, zoneResult);
         assertNull(zoneResult.getConfig().getSamlConfig().getPrivateKey());
@@ -2039,7 +2041,7 @@ class IdentityZoneEndpointsMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        zoneResult = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<IdentityZone>() {
+        zoneResult = JsonUtils.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
         assertEquals(identityZone, zoneResult);
         assertNull(zoneResult.getConfig().getSamlConfig().getPrivateKey());
@@ -2421,7 +2423,7 @@ class IdentityZoneEndpointsMockMvcTests {
         MvcResult mvcResult = mockMvc.perform(get).andExpect(status().isOk()).andReturn();
 
         JsonNode root = JsonUtils.readTree(mvcResult.getResponse().getContentAsString());
-        return JsonUtils.readValue(root.get("resources").toString(), new TypeReference<List<ScimUser>>() {
+        return JsonUtils.readValue(root.get("resources").toString(), new TypeReference<>() {
         });
     }
 }

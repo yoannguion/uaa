@@ -31,7 +31,7 @@ public class InvalidClientSecretException extends InvalidClientDetailsException 
     }
 
     private static String concatenate(List<String> errorMessages) {
-        ArrayList<String> sortedMessages = new ArrayList<String>(errorMessages);
+        ArrayList<String> sortedMessages = new ArrayList<>(errorMessages);
         Collections.sort(sortedMessages);
         return StringUtils.collectionToDelimitedString(sortedMessages, " ");
     }

@@ -128,7 +128,7 @@ public class ScimGroupEndpoints {
     }
 
     private List<ScimGroup> filterForCurrentUser(List<ScimGroup> input, int startIndex, int count, boolean includeMembers) {
-        List<ScimGroup> response = new ArrayList<ScimGroup>();
+        List<ScimGroup> response = new ArrayList<>();
         int expectedResponseSize = Math.min(count, input.size());
         boolean needMore = response.size() < expectedResponseSize;
         while (needMore && startIndex <= input.size()) {
@@ -566,8 +566,8 @@ public class ScimGroupEndpoints {
         // User can supply trace=true or just trace (unspecified) to get stack
         // traces
         boolean trace = request.getParameter("trace") != null && !request.getParameter("trace").equals("false");
-        return new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e, trace),
-            e.getStatus()), messageConverters);
+        return new ConvertingExceptionView(new ResponseEntity<>(new ExceptionReport(e, trace),
+                e.getStatus()), messageConverters);
     }
 
     private int getVersion(String groupId, String etag) {

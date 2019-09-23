@@ -236,7 +236,7 @@ public class ScimUserEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.add("If-Match", "\"" + joe.getVersion() + "\"");
         response = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}", HttpMethod.PUT,
-                        new HttpEntity<ScimUser>(joe, headers), ScimUser.class, joe.getId());
+                new HttpEntity<>(joe, headers), ScimUser.class, joe.getId());
         ScimUser joe1 = response.getBody();
         assertEquals(JOE, joe1.getUserName());
 
@@ -255,7 +255,7 @@ public class ScimUserEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.add("If-Match", "\"" + joe.getVersion() + "\"");
         response = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}", HttpMethod.PUT,
-                        new HttpEntity<ScimUser>(joe, headers), ScimUser.class, joe.getId());
+                new HttpEntity<>(joe, headers), ScimUser.class, joe.getId());
         ScimUser joe1 = response.getBody();
         assertEquals(JOE + "new", joe1.getUserName());
 
@@ -312,7 +312,7 @@ public class ScimUserEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.add("If-Match", "\"" + joe.getVersion() + "\"");
         response = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}", HttpMethod.PUT,
-                        new HttpEntity<ScimUser>(joe, headers), ScimUser.class, joe.getId());
+                new HttpEntity<>(joe, headers), ScimUser.class, joe.getId());
         ScimUser joe1 = response.getBody();
         assertEquals(JOE, joe1.getUserName());
 
@@ -334,7 +334,7 @@ public class ScimUserEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.add("If-Match", "\"" + joe.getVersion() + "\"");
         response = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}", HttpMethod.PUT,
-                        new HttpEntity<ScimUser>(joe, headers), ScimUser.class, joe.getId());
+                new HttpEntity<>(joe, headers), ScimUser.class, joe.getId());
         ScimUser joe1 = response.getBody();
         assertEquals(JOE, joe1.getUserName());
 
@@ -422,7 +422,7 @@ public class ScimUserEndpointsIntegrationTests {
 
         @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = client.exchange(serverRunning.getUrl(userEndpoint + "/{id}"), HttpMethod.DELETE,
-            new HttpEntity<Void>((Void) null), Map.class, deleteMe.getId());
+                new HttpEntity<>((Void) null), Map.class, deleteMe.getId());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -430,7 +430,7 @@ public class ScimUserEndpointsIntegrationTests {
     public void getReturnsNotFoundForNonExistentUser() throws Exception {
         @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = client.exchange(serverRunning.getUrl(userEndpoint + "/{id}"), HttpMethod.GET,
-            new HttpEntity<Void>((Void) null), Map.class, "9999");
+                new HttpEntity<>((Void) null), Map.class, "9999");
         @SuppressWarnings("unchecked")
         Map<String, String> error = response.getBody();
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());

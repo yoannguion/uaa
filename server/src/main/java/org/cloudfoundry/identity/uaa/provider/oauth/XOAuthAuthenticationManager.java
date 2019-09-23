@@ -144,7 +144,8 @@ public class XOAuthAuthenticationManager extends ExternalLoginAuthenticationMana
     public IdentityProvider resolveOriginProvider(String idToken) throws AuthenticationException {
         try {
             String claimsString = JwtHelper.decode(ofNullable(idToken).orElse("")).getClaims();
-            Map<String, Object> claims = JsonUtils.readValue(claimsString, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> claims = JsonUtils.readValue(claimsString, new TypeReference<>() {
+            });
             String issuer = (String) claims.get(ClaimConstants.ISS);
             if (isEmpty(issuer)) {
                 throw new InsufficientAuthenticationException("Issuer is missing in id_token");

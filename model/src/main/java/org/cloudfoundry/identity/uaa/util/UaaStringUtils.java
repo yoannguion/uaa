@@ -209,7 +209,7 @@ public class UaaStringUtils {
      * @return a map of String values
      */
     public static Map<String, ?> getMapFromProperties(Properties properties, String prefix) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         for (String key : properties.stringPropertyNames()) {
             if (key.startsWith(prefix)) {
                 String name = key.substring(prefix.length());

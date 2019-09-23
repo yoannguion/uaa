@@ -256,7 +256,7 @@ class ScimUserEndpointsMockMvcTests {
         ExpiringCode expiringCode = codeStore.retrieveCode(code, IdentityZoneHolder.get().getId());
         assertThat(expiringCode.getExpiresAt().getTime(), is(greaterThan(System.currentTimeMillis())));
         assertThat(expiringCode.getIntent(), is(REGISTRATION.name()));
-        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
         });
         assertThat(data.get(InvitationConstants.USER_ID), is(notNullValue()));
         assertThat(data.get(CLIENT_ID), is(clientDetails.getClientId()));
@@ -297,7 +297,7 @@ class ScimUserEndpointsMockMvcTests {
         IdentityZoneHolder.clear();
         assertThat(expiringCode.getExpiresAt().getTime(), is(greaterThan(System.currentTimeMillis())));
         assertThat(expiringCode.getIntent(), is(REGISTRATION.name()));
-        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
         });
         assertThat(data.get(InvitationConstants.USER_ID), is(notNullValue()));
         assertThat(data.get(CLIENT_ID), is(zonedClientDetails.getClientId()));
@@ -337,7 +337,7 @@ class ScimUserEndpointsMockMvcTests {
         IdentityZoneHolder.clear();
         assertThat(expiringCode.getExpiresAt().getTime(), is(greaterThan(System.currentTimeMillis())));
         assertThat(expiringCode.getIntent(), is(REGISTRATION.name()));
-        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
         });
         assertThat(data.get(InvitationConstants.USER_ID), is(notNullValue()));
         assertThat(data.get(CLIENT_ID), is("admin"));

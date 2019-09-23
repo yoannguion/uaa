@@ -148,8 +148,9 @@ class ApprovalsAdminEndpointsTests {
                 .setScope("scope")
                 .setExpiresAt(new Date())
                 .setStatus(ApprovalStatus.APPROVED));
-        Set<Approval> deserializedApprovals = JsonUtils.readValue("[{\"userid\":\"test-user-id\",\"clientid\":\"testclientid\",\"scope\":\"scope\",\"status\":\"APPROVED\",\"expiresat\":\"2015-08-25T14:35:42.512Z\",\"lastupdatedat\":\"2015-08-25T14:35:42.512Z\"}]", new TypeReference<Set<Approval>>() {
-        });
+        Set<Approval> deserializedApprovals = JsonUtils.readValue("[{\"userid\":\"test-user-id\",\"clientid\":\"testclientid\",\"scope\":\"scope\",\"status\":\"APPROVED\",\"expiresat\":\"2015-08-25T14:35:42.512Z\",\"lastupdatedat\":\"2015-08-25T14:35:42.512Z\"}]",
+                new TypeReference<>() {
+                });
         assertEquals(approvals, deserializedApprovals);
     }
 

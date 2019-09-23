@@ -150,7 +150,7 @@ public class GroupModifiedEvent extends AbstractUaaEvent {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
         if (a==null) {
             a = new Authentication() {
-                ArrayList<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+                ArrayList<GrantedAuthority> authorities = new ArrayList<>();
                 @Override
                 public Collection<? extends GrantedAuthority> getAuthorities() {
                     return authorities;

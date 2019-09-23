@@ -108,7 +108,7 @@ public class UaaAuthorizationRequestManager implements OAuth2RequestFactory {
      * @param scopeToResource the map to use
      */
     public void setScopesToResources(Map<String, String> scopeToResource) {
-        this.scopeToResource = new HashMap<String, String>(scopeToResource);
+        this.scopeToResource = new HashMap<>(scopeToResource);
     }
 
     /**
@@ -299,7 +299,7 @@ public class UaaAuthorizationRequestManager implements OAuth2RequestFactory {
     }
 
     private Set<String> getResourceIds(ClientDetails clientDetails, Set<String> scopes) {
-        Set<String> resourceIds = new LinkedHashSet<String>();
+        Set<String> resourceIds = new LinkedHashSet<>();
         //at a minimum - the resourceIds should contain the client this is intended for
         //http://openid.net/specs/openid-connect-core-1_0.html#IDToken
         if (clientDetails.getClientId()!=null) {

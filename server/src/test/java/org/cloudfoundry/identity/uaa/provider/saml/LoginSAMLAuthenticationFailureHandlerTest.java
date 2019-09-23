@@ -25,7 +25,7 @@ public class LoginSAMLAuthenticationFailureHandlerTest {
         LoginSAMLAuthenticationFailureHandler handler = new LoginSAMLAuthenticationFailureHandler();
 
         DefaultSavedRequest savedRequest = mock(DefaultSavedRequest.class);
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("redirect_uri", new String[] { "https://example.com" });
         when(savedRequest.getParameterMap()).thenReturn(parameterMap);
 
@@ -49,7 +49,7 @@ public class LoginSAMLAuthenticationFailureHandlerTest {
         LoginSAMLAuthenticationFailureHandler handler = new LoginSAMLAuthenticationFailureHandler();
 
         DefaultSavedRequest savedRequest = mock(DefaultSavedRequest.class);
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("redirect_uri", new String[] { "https://example.com?go=bears" });
         when(savedRequest.getParameterMap()).thenReturn(parameterMap);
 
@@ -73,7 +73,7 @@ public class LoginSAMLAuthenticationFailureHandlerTest {
         LoginSAMLAuthenticationFailureHandler handler = new LoginSAMLAuthenticationFailureHandler();
 
         DefaultSavedRequest savedRequest = mock(DefaultSavedRequest.class);
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("redirect_uri", new String[] { "https://example.com?go=bears" });
         when(savedRequest.getParameterMap()).thenReturn(parameterMap);
 
@@ -117,7 +117,7 @@ public class LoginSAMLAuthenticationFailureHandlerTest {
         LoginSAMLAuthenticationFailureHandler handler = new LoginSAMLAuthenticationFailureHandler();
 
         DefaultSavedRequest savedRequest = mock(DefaultSavedRequest.class);
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("redirect_uri", new String[] { "https://example.com" });
         when(savedRequest.getParameterMap()).thenReturn(parameterMap);
 
@@ -140,7 +140,7 @@ public class LoginSAMLAuthenticationFailureHandlerTest {
         LoginSAMLAuthenticationFailureHandler handler = new LoginSAMLAuthenticationFailureHandler();
 
         DefaultSavedRequest savedRequest = mock(DefaultSavedRequest.class);
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        Map<String, String[]> parameterMap = new HashMap<>();
         when(savedRequest.getParameterMap()).thenReturn(parameterMap);
 
         MockHttpSession session = new MockHttpSession();

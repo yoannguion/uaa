@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TestApplicationEventHandler<T extends ApplicationEvent> {
-    protected final List<T> events = new ArrayList<T>();
+    protected final List<T> events = new ArrayList<>();
     protected final Class<T> clazz;
 
     public TestApplicationEventHandler(Class<T> eventType) {

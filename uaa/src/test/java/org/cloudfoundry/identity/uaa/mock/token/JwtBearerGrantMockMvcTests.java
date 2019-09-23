@@ -191,7 +191,8 @@ public class JwtBearerGrantMockMvcTests extends AbstractTokenMockMvcTests {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        Map<String,Object> token = JsonUtils.readValue(jsonToken, new TypeReference<Map<String, Object>>() {});
+        Map<String,Object> token = JsonUtils.readValue(jsonToken, new TypeReference<>() {
+        });
         return (String) token.get("id_token");
     }
 

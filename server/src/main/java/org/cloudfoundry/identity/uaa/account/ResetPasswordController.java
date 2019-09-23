@@ -190,7 +190,8 @@ public class ResetPasswordController {
             logger.debug("reset_password ExpiringCode["+code.getCode()+"] data string is null or empty. Aborting.");
             return null;
         }
-        Map<String,String> data = JsonUtils.readValue(code.getData(), new TypeReference<Map<String,String>>() {});
+        Map<String,String> data = JsonUtils.readValue(code.getData(), new TypeReference<>() {
+        });
         if (!hasText(data.get("user_id"))) {
             logger.debug("reset_password ExpiringCode["+code.getCode()+"] user_id string is null or empty. Aborting.");
             return null;

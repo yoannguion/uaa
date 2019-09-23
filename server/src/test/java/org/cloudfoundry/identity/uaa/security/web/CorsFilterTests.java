@@ -404,10 +404,10 @@ public class CorsFilterTests {
         CorsFilter corsFilter = new CorsFilter();
 
         List<String> allowedUris =
-                new ArrayList<String>(Arrays.asList(new String[] { "^/uaa/userinfo(", "^/uaa/logout.do$" }));
+                new ArrayList<>(Arrays.asList(new String[]{"^/uaa/userinfo(", "^/uaa/logout.do$"}));
         corsFilter.getXhrConfiguration().setAllowedUris(allowedUris);
 
-        List<String> allowedOrigins = new ArrayList<String>(Arrays.asList(new String[] { "example.com$" }));
+        List<String> allowedOrigins = new ArrayList<>(Arrays.asList(new String[]{"example.com$"}));
         corsFilter.getXhrConfiguration().setAllowedOrigins(allowedOrigins);
 
         corsFilter.initialize();
@@ -440,7 +440,7 @@ public class CorsFilterTests {
         corsFilter.getXhrConfiguration().setAllowedUris(allowedUris);
         corsFilter.getDefaultConfiguration().setAllowedUris(allowedUris);
 
-        List<String> allowedOrigins = new ArrayList<String>(Collections.singletonList("example.com$"));
+        List<String> allowedOrigins = new ArrayList<>(Collections.singletonList("example.com$"));
         corsFilter.getXhrConfiguration().setAllowedOrigins(allowedOrigins);
         corsFilter.getDefaultConfiguration().setAllowedOrigins(allowedOrigins);
 

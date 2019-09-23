@@ -210,7 +210,8 @@ class RefreshTokenMockMvcTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
+        });
         String accessToken = (String) bodyMap.get("access_token");
 
         mockMvc.perform(
@@ -240,7 +241,8 @@ class RefreshTokenMockMvcTests extends AbstractTokenMockMvcTests {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
+        });
         String idToken = (String) bodyMap.get("id_token");
 
         mockMvc.perform(

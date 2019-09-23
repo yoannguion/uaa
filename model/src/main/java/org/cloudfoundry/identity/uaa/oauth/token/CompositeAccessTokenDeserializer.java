@@ -44,7 +44,7 @@ public final class CompositeAccessTokenDeserializer extends StdDeserializer<Comp
         String refreshToken = null;
         Long expiresIn = null;
         Set<String> scope = null;
-        Map<String, Object> additionalInformation = new LinkedHashMap<String, Object>();
+        Map<String, Object> additionalInformation = new LinkedHashMap<>();
 
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String name = jp.getCurrentName();

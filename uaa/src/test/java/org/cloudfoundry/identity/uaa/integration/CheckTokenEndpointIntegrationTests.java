@@ -150,7 +150,7 @@ public class CheckTokenEndpointIntegrationTests {
         OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(tokenResponse.getBody());
 
         HttpHeaders headers = new HttpHeaders();
-        formData = new LinkedMultiValueMap<String, String>();
+        formData = new LinkedMultiValueMap<>();
         headers.set("Authorization",
                         testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
         formData.add("token", accessToken.getValue());
@@ -170,7 +170,7 @@ public class CheckTokenEndpointIntegrationTests {
 
     @Test
     public void testUnauthorized() {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("token", "FOO");
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -186,7 +186,7 @@ public class CheckTokenEndpointIntegrationTests {
 
     @Test
     public void testForbidden() throws Exception {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("token", "FOO");
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Basic " + new String(Base64.encode("cf:".getBytes(UTF_8))));
@@ -227,7 +227,7 @@ public class CheckTokenEndpointIntegrationTests {
     public void testValidPasswordGrant() {
         OAuth2AccessToken accessToken = getUserToken(null);
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         HttpHeaders tokenHeaders = new HttpHeaders();
         ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
         tokenHeaders.set("Authorization",
@@ -251,7 +251,7 @@ public class CheckTokenEndpointIntegrationTests {
     public void testAddidionalAttributes() {
         OAuth2AccessToken accessToken = getUserToken("{\"az_attr\":{\"external_group\":\"domain\\\\group1\",\"external_id\":\"abcd1234\"}}");
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         HttpHeaders tokenHeaders = new HttpHeaders();
         ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
         tokenHeaders.set("Authorization",
@@ -275,7 +275,7 @@ public class CheckTokenEndpointIntegrationTests {
     public void testInvalidAddidionalAttributes() {
         OAuth2AccessToken accessToken = getUserToken("{\"az_attr\":{\"external_group\":true,\"external_id\":{\"nested_group\":true,\"nested_id\":1234}} }");
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         HttpHeaders tokenHeaders = new HttpHeaders();
         ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
         tokenHeaders.set("Authorization",

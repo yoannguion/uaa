@@ -117,7 +117,7 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
     @Override
     public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException {
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("token", accessToken);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", getAuthorizationHeader(clientId, clientSecret));
@@ -131,7 +131,7 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
         Assert.state(map.containsKey("client_id"), "Client id must be present in response from auth server");
         String remoteClientId = (String) map.get("client_id");
 
-        Set<String> scope = new HashSet<String>();
+        Set<String> scope = new HashSet<>();
         if (map.containsKey("scope")) {
             @SuppressWarnings("unchecked")
             Collection<String> values = (Collection<String>) map.get("scope");
@@ -140,13 +140,13 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
         AuthorizationRequest clientAuthentication = new AuthorizationRequest(remoteClientId, scope);
 
         if (map.containsKey("resource_ids") || map.containsKey("client_authorities")) {
-            Set<String> resourceIds = new HashSet<String>();
+            Set<String> resourceIds = new HashSet<>();
             if (map.containsKey("resource_ids")) {
                 @SuppressWarnings("unchecked")
                 Collection<String> values = (Collection<String>) map.get("resource_ids");
                 resourceIds.addAll(values);
             }
-            Set<GrantedAuthority> clientAuthorities = new HashSet<GrantedAuthority>();
+            Set<GrantedAuthority> clientAuthorities = new HashSet<>();
             if (map.containsKey("client_authorities")) {
                 @SuppressWarnings("unchecked")
                 Collection<String> values = (Collection<String>) map.get("client_authorities");
@@ -187,7 +187,7 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
         if (username == null) {
             return null;
         }
-        Set<GrantedAuthority> userAuthorities = new HashSet<GrantedAuthority>();
+        Set<GrantedAuthority> userAuthorities = new HashSet<>();
         if (map.containsKey("user_authorities")) {
             @SuppressWarnings("unchecked")
             Collection<String> values = (Collection<String>) map.get("user_authorities");
@@ -209,7 +209,7 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
     }
 
     private Set<GrantedAuthority> getAuthorities(Collection<String> authorities) {
-        Set<GrantedAuthority> result = new HashSet<GrantedAuthority>();
+        Set<GrantedAuthority> result = new HashSet<>();
         for (String authority : authorities) {
             result.add(new SimpleGrantedAuthority(authority));
         }
@@ -227,7 +227,7 @@ public class RemoteTokenServices implements ResourceServerTokenServices {
         }
         @SuppressWarnings("rawtypes")
         Map map = restTemplate.exchange(path, HttpMethod.POST,
-                        new HttpEntity<MultiValueMap<String, String>>(formData, headers), Map.class).getBody();
+                new HttpEntity<>(formData, headers), Map.class).getBody();
         @SuppressWarnings("unchecked")
         Map<String, Object> result = map;
         return result;

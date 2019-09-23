@@ -114,7 +114,7 @@ public class UaaAuthorizationEndpointTest {
     public void testBuildRedirectURI_doesNotIncludeSessionStateWhenNotPromptNone() {
         AuthorizationRequest authorizationRequest = new AuthorizationRequest();
         authorizationRequest.setRedirectUri("http://example.com/somepath");
-        authorizationRequest.setResponseTypes(new HashSet<String>() {
+        authorizationRequest.setResponseTypes(new HashSet<>() {
             {
                 add("code");
                 add("token");
@@ -148,7 +148,7 @@ public class UaaAuthorizationEndpointTest {
     public void buildRedirectURI_includesSessionStateForPromptEqualsNone() {
         AuthorizationRequest authorizationRequest = new AuthorizationRequest();
         authorizationRequest.setRedirectUri("http://example.com/somepath");
-        authorizationRequest.setRequestParameters(new HashMap<String, String>() {
+        authorizationRequest.setRequestParameters(new HashMap<>() {
             {
                 put("prompt", "none");
             }

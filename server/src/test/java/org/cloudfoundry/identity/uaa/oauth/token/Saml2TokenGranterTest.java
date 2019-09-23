@@ -198,7 +198,7 @@ public class Saml2TokenGranterTest {
     public void test_oauth2_authentication_with_empty_allowed() {
         OAuth2Request myReq = new OAuth2Request(requestParameters, receivingClient.getClientId(), receivingClient.getAuthorities(), true, receivingClient.getScope(), receivingClient.getResourceIds(), null, null, null);
         BaseClientDetails myClient = new BaseClientDetails(requestingClient);
-        List<String> allowedProviders = new LinkedList<String>();
+        List<String> allowedProviders = new LinkedList<>();
         Map<String, Object> additionalInformation = new LinkedHashMap<>();
         Collection me = AuthorityUtils.commaSeparatedStringToAuthorityList("openid,foo.bar,uaa.user,one.read");
         //when(new DefaultSecurityContextAccessor()).thenReturn((DefaultSecurityContextAccessor) securityContextAccessor);

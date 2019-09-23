@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public class NestedMapPropertySource extends MapPropertySource {
 
-    private Map<String, Object> cache = new HashMap<String, Object>();
+    private Map<String, Object> cache = new HashMap<>();
 
     private boolean initialized = false;
 
@@ -74,7 +74,7 @@ public class NestedMapPropertySource extends MapPropertySource {
         if (initialized) {
             return;
         }
-        appendCache(this.cache, new HashSet<String>(), this.source, null);
+        appendCache(this.cache, new HashSet<>(), this.source, null);
         initialized = true;
     }
 

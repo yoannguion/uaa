@@ -105,7 +105,7 @@ public class MBeanMap extends AbstractMap<String, Object>{
 			return map;
 		}
 		if (value instanceof TabularDataSupport) {
-			Map<Object, Object> map = new HashMap<Object, Object>();
+			Map<Object, Object> map = new HashMap<>();
 			TabularDataSupport composite = (TabularDataSupport) value;
 			for (Entry<Object, Object> entry : composite.entrySet()) {
 				Object wrapper = getCompositeWrapper(entry.getValue());
@@ -120,14 +120,14 @@ public class MBeanMap extends AbstractMap<String, Object>{
 		}
 		if (value instanceof Collection) {
 			Collection<?> composite = (Collection<?>) value;
-			List<Object> list = new ArrayList<Object>();
+			List<Object> list = new ArrayList<>();
 			for (Object element : composite) {
 				list.add(getCompositeWrapper(element));
 			}
 			return list;
 		}
 		if (value.getClass().isArray()) {
-			List<Object> list = new ArrayList<Object>();
+			List<Object> list = new ArrayList<>();
 			for (Object element : (Object[]) value) {
 				list.add(getCompositeWrapper(element));
 			}

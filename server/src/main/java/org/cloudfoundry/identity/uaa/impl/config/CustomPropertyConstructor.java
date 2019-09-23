@@ -30,7 +30,7 @@ import java.util.Map;
  * @author Luke Taylor
  */
 public class CustomPropertyConstructor extends Constructor {
-    private final Map<Class<?>, Map<String, Property>> properties = new HashMap<Class<?>, Map<String, Property>>();
+    private final Map<Class<?>, Map<String, Property>> properties = new HashMap<>();
     private final PropertyUtils propertyUtils = new PropertyUtils();
     private final Map<Class<?>, AliasSupportingTypeDescription> typeDescriptions = new HashMap<>();
 
@@ -62,7 +62,7 @@ public class CustomPropertyConstructor extends Constructor {
         Map<String, Property> typeMap = properties.get(type);
 
         if (typeMap == null) {
-            typeMap = new HashMap<String, Property>();
+            typeMap = new HashMap<>();
             properties.put(type, typeMap);
         }
 

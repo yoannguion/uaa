@@ -46,7 +46,7 @@ public class YamlProcessor {
 
     private Resource[] resources = new Resource[0];
 
-    private Map<String, String> documentMatchers = new HashMap<String, String>();
+    private Map<String, String> documentMatchers = new HashMap<>();
 
     private boolean matchDefault = true;
 

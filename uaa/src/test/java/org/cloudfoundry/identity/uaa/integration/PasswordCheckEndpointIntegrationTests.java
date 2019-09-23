@@ -40,7 +40,7 @@ public class PasswordCheckEndpointIntegrationTests {
 
     @Test
     public void passwordPostSucceeds() throws Exception {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("password", "password1");
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -55,7 +55,7 @@ public class PasswordCheckEndpointIntegrationTests {
 
     @Test
     public void passwordPostWithUserDataSucceeds() throws Exception {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("password", "joe@joesplace.blah");
         formData.add("userData", "joe,joe@joesplace.blah,joesdogsname");
         HttpHeaders headers = new HttpHeaders();

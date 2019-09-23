@@ -92,7 +92,7 @@ public class MfaProvider<T extends AbstractMfaProviderConfig> {
     public enum MfaProviderType {
         GOOGLE_AUTHENTICATOR;
 
-        private static Map<String, MfaProviderType> namesMap = new HashMap<String, MfaProviderType>();
+        private static Map<String, MfaProviderType> namesMap = new HashMap<>();
         static {
             namesMap.put("google-authenticator", GOOGLE_AUTHENTICATOR);
         }

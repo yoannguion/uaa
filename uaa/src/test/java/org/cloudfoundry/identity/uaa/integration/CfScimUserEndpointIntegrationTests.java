@@ -91,7 +91,7 @@ public class CfScimUserEndpointIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         ResponseEntity<Void> result = client
                         .exchange(serverRunning.getUrl(usersEndpoint) + "/{id}/password",
-                                        HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers),
+                                        HttpMethod.PUT, new HttpEntity<>(change, headers),
                                         Void.class, joe.getId());
         assertEquals(HttpStatus.OK, result.getStatusCode());
 
@@ -128,7 +128,7 @@ public class CfScimUserEndpointIntegrationTests {
         RestOperations client = serverRunning.getRestTemplate();
         ResponseEntity<Void> result = client
                         .exchange(serverRunning.getUrl(usersEndpoint) + "/{id}/password",
-                                        HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers),
+                                        HttpMethod.PUT, new HttpEntity<>(change, headers),
                                         Void.class, joe.getId());
         assertEquals(HttpStatus.OK, result.getStatusCode());
 

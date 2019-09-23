@@ -14,7 +14,7 @@ public class InMemoryExpiringCodeStore implements ExpiringCodeStore {
 
     private RandomValueStringGenerator generator = new RandomValueStringGenerator(6);
 
-    private ConcurrentMap<String, ExpiringCode> store = new ConcurrentHashMap<String, ExpiringCode>();
+    private ConcurrentMap<String, ExpiringCode> store = new ConcurrentHashMap<>();
 
     private TimeService timeService = new TimeServiceImpl();
 

@@ -52,7 +52,8 @@ public class EmailInvitationsService implements InvitationsService {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
         }
 
-        Map<String,String> userData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {});
+        Map<String,String> userData = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         String userId = userData.get(USER_ID);
         String clientId = userData.get(CLIENT_ID);
         String redirectUri = userData.get(REDIRECT_URI);

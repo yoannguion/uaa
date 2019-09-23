@@ -219,7 +219,7 @@ public class UaaUser {
     }
 
     public UaaUser authorities(Collection<? extends GrantedAuthority> authorities) {
-        ArrayList<GrantedAuthority> values = new ArrayList<GrantedAuthority>(authorities);
+        ArrayList<GrantedAuthority> values = new ArrayList<>(authorities);
         for (int i = 0; i < values.size(); i++) {
             GrantedAuthority authority = values.get(i);
             values.set(i, UaaAuthority.authority(authority.toString()));

@@ -780,7 +780,7 @@ public class UaaAuthorizationEndpoint extends AbstractEndpoint implements Authen
             return authorizationRequest;
         }
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         Map<String, String[]> map = webRequest.getParameterMap();
         for (String key : map.keySet()) {
             String[] values = map.get(key);

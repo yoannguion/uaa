@@ -83,7 +83,7 @@ public class LoginServerSecurityIntegrationTests {
     @Rule
     public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
 
-    private MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+    private MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
     private HttpHeaders headers = new HttpHeaders();
     private ScimUser userForLoginServer;
@@ -146,7 +146,7 @@ public class LoginServerSecurityIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         ResponseEntity<Void> result = client
                         .exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-                                        HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers),
+                                        HttpMethod.PUT, new HttpEntity<>(change, headers),
                                         Void.class, joe.getId());
         assertEquals(HttpStatus.OK, result.getStatusCode());
 

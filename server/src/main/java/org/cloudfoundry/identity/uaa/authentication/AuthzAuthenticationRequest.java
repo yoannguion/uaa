@@ -47,7 +47,7 @@ public class AuthzAuthenticationRequest implements Authentication {
     public AuthzAuthenticationRequest(String username, String password, UaaAuthenticationDetails details) {
         Assert.hasText(username, "username cannot be empty");
         Assert.hasText(password, "password cannot be empty");
-        HashMap<String, String> info = new HashMap<String, String>();
+        HashMap<String, String> info = new HashMap<>();
         info.put("username", username.trim());
         info.put("password", password.trim());
         this.info = Collections.unmodifiableMap(info);
@@ -61,7 +61,7 @@ public class AuthzAuthenticationRequest implements Authentication {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (null != info.get("authorities")) {
-            Collection<ExtendedUaaAuthority> returnAuthorities = new LinkedHashSet<ExtendedUaaAuthority>();
+            Collection<ExtendedUaaAuthority> returnAuthorities = new LinkedHashSet<>();
 
             String[] authorities = StringUtils.commaDelimitedListToStringArray(info.get("authorities"));
 

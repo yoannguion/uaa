@@ -135,7 +135,8 @@ public class JsonUtils {
 
     public static String serializeExcludingProperties(Object object, String... propertiesToExclude) {
         String serialized = JsonUtils.writeValueAsString(object);
-        Map<String, Object> properties = JsonUtils.readValue(serialized, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> properties = JsonUtils.readValue(serialized, new TypeReference<>() {
+        });
         for(String property : propertiesToExclude) {
             if(property.contains(".")) {
                 String[] split = property.split("\\.", 2);

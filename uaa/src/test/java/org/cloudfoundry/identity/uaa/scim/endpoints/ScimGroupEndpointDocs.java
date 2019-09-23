@@ -388,8 +388,9 @@ class ScimGroupEndpointDocs extends EndpointDocs {
     }
 
     private static String serializeWithoutMeta(ScimGroup scimGroup) {
-        Map<String, Object> content = JsonUtils.readValue(JsonUtils.writeValueAsString(scimGroup), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> content = JsonUtils.readValue(JsonUtils.writeValueAsString(scimGroup),
+                new TypeReference<>() {
+                });
         content.remove("id");
         content.remove("zoneId");
         content.remove("meta");

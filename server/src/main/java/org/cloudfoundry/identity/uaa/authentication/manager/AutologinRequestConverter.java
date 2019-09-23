@@ -67,7 +67,8 @@ public class AutologinRequestConverter extends AbstractHttpMessageConverter<Auto
         String username, password;
         if (isJsonContent(inputMessage.getHeaders().get(HttpHeaders.CONTENT_TYPE))) {
             Map<String, String> map = JsonUtils.readValue(stringConverter.read(String.class, inputMessage),
-                                                          new TypeReference<Map<String, String>>() {});
+                    new TypeReference<>() {
+                    });
             username = map.get("username");
             password = map.get("password");
         } else {
@@ -84,7 +85,7 @@ public class AutologinRequestConverter extends AbstractHttpMessageConverter<Auto
     @Override
     protected void writeInternal(AutologinRequest t, HttpOutputMessage outputMessage) throws IOException,
                     HttpMessageNotWritableException {
-        MultiValueMap<String, String> map = new LinkedMaskingMultiValueMap<String, String>("password");
+        MultiValueMap<String, String> map = new LinkedMaskingMultiValueMap<>("password");
         if (t.getUsername() != null) {
             map.set("username", t.getUsername());
         }

@@ -72,7 +72,7 @@ public class HomeController {
     }
 
     protected void populateBuildAndLinkInfo(Model model) {
-        Map<String, Object> attributes = new HashMap<String, Object>();
+        Map<String, Object> attributes = new HashMap<>();
         model.addAllAttributes(attributes);
     }
 

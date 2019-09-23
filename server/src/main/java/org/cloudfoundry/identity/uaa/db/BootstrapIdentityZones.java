@@ -21,8 +21,8 @@ public class BootstrapIdentityZones implements SpringJdbcMigration {
         IdentityZone uaa = IdentityZone.getUaa();
         Timestamp t = new Timestamp(uaa.getCreated().getTime());
         jdbcTemplate.update("insert into identity_zone VALUES (?,?,?,?,?,?,?)", uaa.getId(),t,t,uaa.getVersion(),uaa.getSubdomain(),uaa.getName(),uaa.getDescription());
-        Map<String,String> originMap = new HashMap<String, String>();
-        Set<String> origins = new LinkedHashSet<String>();
+        Map<String,String> originMap = new HashMap<>();
+        Set<String> origins = new LinkedHashSet<>();
         origins.addAll(Arrays.asList(new String[] {OriginKeys.UAA, OriginKeys.LOGIN_SERVER, OriginKeys.LDAP, OriginKeys.KEYSTONE}));
         origins.addAll(jdbcTemplate.queryForList("SELECT DISTINCT origin from users", String.class));
         for (String origin : origins) {

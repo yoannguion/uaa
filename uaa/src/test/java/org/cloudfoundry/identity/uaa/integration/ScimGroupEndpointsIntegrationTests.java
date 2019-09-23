@@ -85,7 +85,7 @@ public class ScimGroupEndpointsIntegrationTests {
 
     private final String userEndpoint = "/Users";
 
-    private List<String> groupIds = new ArrayList<String>();
+    private List<String> groupIds = new ArrayList<>();
 
     private static final List<String> defaultGroups = Arrays.asList("openid", "scim.me", "cloud_controller.read",
         "cloud_controller.write", "password.write", "scim.userids", "uaa.user", "approvals.me",
@@ -454,7 +454,7 @@ public class ScimGroupEndpointsIntegrationTests {
         String clientId = testAccounts.getAdminClientId();
         String clientSecret = testAccounts.getAdminClientSecret();
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "client_credentials");
         formData.add("client_id", clientId);
         formData.add("scope", scope);
@@ -483,7 +483,7 @@ public class ScimGroupEndpointsIntegrationTests {
 
     private OAuth2AccessToken getAccessTokenWithPassword(String clientId, String clientSecret, String username,
                                                          String password) {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("client_id", clientId);
         formData.add("grant_type", "password");
         formData.add("username", username);

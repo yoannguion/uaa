@@ -83,7 +83,7 @@ public class IdpMetadataGenerator {
     private IdpExtendedMetadata extendedMetadata;
 
     // List of case-insensitive alias terms
-    private static TreeMap<String, String> aliases = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    private static TreeMap<String, String> aliases = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     static {
         aliases.put(SAMLConstants.SAML2_POST_BINDING_URI, SAMLConstants.SAML2_POST_BINDING_URI);
@@ -356,7 +356,7 @@ public class IdpMetadataGenerator {
      * @return result with resolved aliases
      */
     protected Collection<String> mapAliases(Collection<String> values) {
-        LinkedHashSet<String> result = new LinkedHashSet<String>();
+        LinkedHashSet<String> result = new LinkedHashSet<>();
         for (String value : values) {
             String alias = aliases.get(value);
             if (alias != null) {
@@ -402,7 +402,7 @@ public class IdpMetadataGenerator {
 
         // Resolve alases
         includedNameID = mapAliases(includedNameID);
-        Collection<NameIDFormat> formats = new LinkedList<NameIDFormat>();
+        Collection<NameIDFormat> formats = new LinkedList<>();
         @SuppressWarnings("unchecked")
         SAMLObjectBuilder<NameIDFormat> builder = (SAMLObjectBuilder<NameIDFormat>) builderFactory
                 .getBuilder(NameIDFormat.DEFAULT_ELEMENT_NAME);
@@ -542,7 +542,7 @@ public class IdpMetadataGenerator {
             // Add parameters
             URLBuilder returnUrlBuilder = new URLBuilder(resultString);
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                returnUrlBuilder.getQueryParams().add(new Pair<String, String>(entry.getKey(), entry.getValue()));
+                returnUrlBuilder.getQueryParams().add(new Pair<>(entry.getKey(), entry.getValue()));
             }
             return returnUrlBuilder.buildURL();
 
@@ -797,7 +797,7 @@ public class IdpMetadataGenerator {
                 && extendedMetadata.getIdpDiscoveryResponseURL().length() > 0) {
             return extendedMetadata.getIdpDiscoveryResponseURL();
         } else {
-            Map<String, String> params = new HashMap<String, String>();
+            Map<String, String> params = new HashMap<>();
             params.put(SAMLEntryPoint.DISCOVERY_RESPONSE_PARAMETER, "true");
             return getServerURL(entityBaseURL, entityAlias, getSAMLEntryPointPath(), params);
         }

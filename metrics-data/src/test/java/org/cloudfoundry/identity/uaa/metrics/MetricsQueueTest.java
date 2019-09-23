@@ -64,7 +64,8 @@ class MetricsQueueTest {
     @Test
     void json_serialize() {
         String json = JsonUtils.writeValueAsString(queue);
-        Map<String,Object> object = JsonUtils.readValue(json, new TypeReference<Map<String, Object>>() {});
+        Map<String,Object> object = JsonUtils.readValue(json, new TypeReference<>() {
+        });
         assertNotNull(object);
         assertEquals(3, object.size());
         MetricsQueue deserialized = JsonUtils.readValue(json, MetricsQueue.class);

@@ -156,7 +156,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
     }
 
     private Map<String, String> getSingleValueMap(HttpServletRequest request) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         Map<String, String[]> parameters = request.getParameterMap();
         for (String key : parameters.keySet()) {
             String[] values = parameters.get(key);

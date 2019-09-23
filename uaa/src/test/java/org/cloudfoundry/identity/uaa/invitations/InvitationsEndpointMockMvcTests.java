@@ -469,7 +469,7 @@ class InvitationsEndpointMockMvcTests {
             IdentityZoneHolder.clear();
             assertThat(expiringCode.getExpiresAt().getTime(), is(greaterThan(System.currentTimeMillis())));
             assertThat(expiringCode.getIntent(), is(ExpiringCodeType.INVITATION.name()));
-            Map<String, String> data = readValue(expiringCode.getData(), new TypeReference<Map<String, String>>() {
+            Map<String, String> data = readValue(expiringCode.getData(), new TypeReference<>() {
             });
             assertThat(data, is(not(nullValue())));
             assertThat(data.get(InvitationConstants.USER_ID), is(notNullValue()));

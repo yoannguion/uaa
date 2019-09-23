@@ -126,8 +126,9 @@ public class ClientMetadataAdminEndpointsMockMvcTest {
         MockHttpServletResponse response = mockMvc.perform(get("/oauth/clients/meta")
                 .header("Authorization", "Bearer " + marissaToken)
                 .accept(APPLICATION_JSON)).andExpect(status().isOk()).andReturn().getResponse();
-        ArrayList<ClientMetadata> clientMetadataList = JsonUtils.readValue(response.getContentAsString(), new TypeReference<ArrayList<ClientMetadata>>() {
-        });
+        ArrayList<ClientMetadata> clientMetadataList = JsonUtils.readValue(response.getContentAsString(),
+                new TypeReference<>() {
+                });
 
         assertThat(clientMetadataList, not(PredicateMatcher.<ClientMetadata>has(m -> m.getClientId().equals(clientId1))));
         assertThat(clientMetadataList, not(PredicateMatcher.<ClientMetadata>has(m -> m.getClientId().equals(clientId2))));

@@ -95,7 +95,8 @@ class PasswordResetEndpointMockMvcTests {
 
         ExpiringCode expiringCode = store.retrieveCode("test" + generator.counter.get(), IdentityZoneHolder.get().getId());
         assertThat(expiringCode.getIntent(), is(ExpiringCodeType.AUTOLOGIN.name()));
-        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String,String>>() {});
+        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         assertThat(data, is(not(nullValue())));
         assertThat(data.get("user_id"), is(scimUser.getId()));
         assertThat(data.get("username"), is(scimUser.getUserName()));
@@ -124,7 +125,8 @@ class PasswordResetEndpointMockMvcTests {
                 .andExpect(jsonPath("$.code").value("test" + generator.counter.get()));
 
         ExpiringCode expiringCode = store.retrieveCode("test" + generator.counter.get(), IdentityZoneHolder.get().getId());
-        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<Map<String,String>>() {});
+        Map<String,String> data = JsonUtils.readValue(expiringCode.getData(), new TypeReference<>() {
+        });
         assertThat(data, is(not(nullValue())));
         assertThat(data.get(OAuth2Utils.CLIENT_ID), is("another-client"));
     }
@@ -146,7 +148,7 @@ class PasswordResetEndpointMockMvcTests {
         String resultingCodeString = getCodeFromPage(result);
         ExpiringCode resultingCode = jdbcExpiringCodeStore.retrieveCode(resultingCodeString, IdentityZoneHolder.get().getId());
 
-        Map<String, String> resultingCodeData = JsonUtils.readValue(resultingCode.getData(), new TypeReference<Map<String, String>>() {
+        Map<String, String> resultingCodeData = JsonUtils.readValue(resultingCode.getData(), new TypeReference<>() {
         });
 
         assertThat(resultingCodeData, is(not(nullValue())));

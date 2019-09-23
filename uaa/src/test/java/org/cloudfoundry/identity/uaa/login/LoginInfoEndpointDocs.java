@@ -196,7 +196,7 @@ class LoginInfoEndpointDocs extends EndpointDocs {
                 )
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        return JsonUtils.readValue(body, new TypeReference<>() {
         });
     }
 

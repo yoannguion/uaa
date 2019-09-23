@@ -164,7 +164,7 @@ public class YamlBindingTests {
                         Class<?> type = bw.getPropertyType(base);
                         if (type != null && Map.class.isAssignableFrom(type)) {
                             String suffix = name.substring(base.length());
-                            Map<String, Object> nested = new LinkedHashMap<String, Object>();
+                            Map<String, Object> nested = new LinkedHashMap<>();
                             if (bw.getPropertyValue(base) != null) {
                                 @SuppressWarnings("unchecked")
                                 Map<String, Object> existing = (Map<String, Object>) bw.getPropertyValue(base);

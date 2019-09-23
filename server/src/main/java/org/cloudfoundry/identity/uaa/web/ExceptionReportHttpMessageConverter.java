@@ -57,11 +57,11 @@ public class ExceptionReportHttpMessageConverter extends AbstractHttpMessageConv
 
     @Override
     public List<MediaType> getSupportedMediaTypes() {
-        Set<MediaType> list = new LinkedHashSet<MediaType>();
+        Set<MediaType> list = new LinkedHashSet<>();
         for (HttpMessageConverter<?> converter : messageConverters) {
             list.addAll(converter.getSupportedMediaTypes());
         }
-        return new ArrayList<MediaType>(list);
+        return new ArrayList<>(list);
     }
 
     @Override

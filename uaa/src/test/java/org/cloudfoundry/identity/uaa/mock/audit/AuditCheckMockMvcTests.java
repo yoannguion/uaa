@@ -1272,7 +1272,7 @@ class AuditCheckMockMvcTests {
         AuditEvent auditEvent = auditEvents.get(0);
         String auditEventData = auditEvent.getData();
         assertNotNull(auditEventData);
-        Map<String, Object> auditObjects = JsonUtils.readValue(auditEventData, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> auditObjects = JsonUtils.readValue(auditEventData, new TypeReference<>() {
         });
         assertEquals("testgroup", auditObjects.get("group_name"));
         assertThat((Collection<String>) auditObjects.get("members"), containsInAnyOrder(groupMemberIds));
@@ -1363,7 +1363,7 @@ class AuditCheckMockMvcTests {
         String auditEventData = auditEvent.getData();
         assertNotNull(auditEventData);
 
-        Map<String, Object> map = JsonUtils.readValue(auditEventData, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> map = JsonUtils.readValue(auditEventData, new TypeReference<>() {
         });
         List<String> auditScopes = (List<String>) map.get("scopes");
         List<String> auditAuthorities = (List<String>) map.get("authorities");

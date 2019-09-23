@@ -51,7 +51,8 @@ public class PasswordGrantIntegrationTests {
         ResponseEntity<String> responseEntity = makePasswordGrantRequest(testAccounts.getUserName(), testAccounts.getPassword(), client.getClientId(), "secret", serverRunning.getAccessTokenUri());
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals("application/json;charset=UTF-8", responseEntity.getHeaders().get("Content-Type").get(0));
-        Map<String, Object> errors = JsonUtils.readValue(responseEntity.getBody(), new TypeReference<Map<String,Object>>() {});
+        Map<String, Object> errors = JsonUtils.readValue(responseEntity.getBody(), new TypeReference<>() {
+        });
         assertEquals(HtmlUtils.htmlEscape("User does not meet the client's required group criteria.", "ISO-8859-1"), errors.get("error_description"));
         assertEquals("invalid_scope", errors.get("error"));
     }

@@ -81,7 +81,7 @@ public class KeystoneAuthenticationManagerTest {
             eq(HttpMethod.POST),
             any(HttpEntity.class),
             eq(Map.class)))
-            .thenReturn(new ResponseEntity<Map>(restResult, status));
+            .thenReturn(new ResponseEntity<>(restResult, status));
 
 
         restAuthenticationManager.setNullPassword(false);

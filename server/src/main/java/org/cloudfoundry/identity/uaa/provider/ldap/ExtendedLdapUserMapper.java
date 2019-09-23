@@ -48,7 +48,7 @@ public class ExtendedLdapUserMapper extends LdapUserDetailsMapper {
         LdapUserDetails ldapUserDetails = (LdapUserDetails) super.mapUserFromContext(ctx, username, authorities);
 
         DirContextAdapter adapter = (DirContextAdapter) ctx;
-        Map<String, String[]> record = new HashMap<String, String[]>();
+        Map<String, String[]> record = new HashMap<>();
         List<String> attributeNames = Collections.list(adapter.getAttributes().getIDs());
         for (String attributeName : attributeNames) {
             try {

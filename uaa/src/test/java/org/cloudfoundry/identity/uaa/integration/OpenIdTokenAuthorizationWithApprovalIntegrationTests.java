@@ -290,7 +290,7 @@ public class OpenIdTokenAuthorizationWithApprovalIntegrationTests {
         assertTrue(response.getBody().contains("username"));
         assertTrue(response.getBody().contains("password"));
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("username", user.getUserName());
         formData.add("password", "s3Cret");
         formData.add(CookieBasedCsrfTokenRepository.DEFAULT_CSRF_COOKIE_NAME, extractCookieCsrf(response.getBody()));

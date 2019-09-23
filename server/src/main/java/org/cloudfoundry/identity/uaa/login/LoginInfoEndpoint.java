@@ -327,7 +327,7 @@ public class LoginInfoEndpoint {
         Map<String, AbstractXOAuthIdentityProviderDefinition> oauthIdentityProviders =
                 getOauthIdentityProviderDefinitions(allowedIdentityProviderKeys);
         Map<String, AbstractIdentityProviderDefinition> allIdentityProviders =
-                new HashMap<String, AbstractIdentityProviderDefinition>() {{
+                new HashMap<>() {{
                     putAll(samlIdentityProviders);
                     putAll(oauthIdentityProviders);
                 }};

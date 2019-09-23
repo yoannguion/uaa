@@ -92,7 +92,7 @@ public class JdbcPagingList<E> extends AbstractList<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return new SafeIterator<E>(super.iterator());
+        return new SafeIterator<>(super.iterator());
     }
 
     @Override
@@ -100,7 +100,7 @@ public class JdbcPagingList<E> extends AbstractList<E> {
         if (fromIndex < 0 || toIndex > size || fromIndex > toIndex) {
             throw new IndexOutOfBoundsException("The indexes provided are outside the bounds of this list.");
         }
-        return new SafeIteratorList<E>(super.subList(fromIndex, toIndex));
+        return new SafeIteratorList<>(super.subList(fromIndex, toIndex));
     }
 
     private String getCountSql(String sql) {
@@ -143,7 +143,7 @@ public class JdbcPagingList<E> extends AbstractList<E> {
 
         @Override
         public Iterator<T> iterator() {
-            return new SafeIterator<T>(super.iterator());
+            return new SafeIterator<>(super.iterator());
         }
 
         @Override

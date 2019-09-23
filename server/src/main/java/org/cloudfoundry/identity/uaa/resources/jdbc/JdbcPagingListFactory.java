@@ -36,6 +36,6 @@ public class JdbcPagingListFactory {
     }
 
     public <T> List<T> createJdbcPagingList(String sql, Map<String, ?> args, RowMapper<T> mapper, int pageSize) {
-        return new JdbcPagingList<T>(jdbcTemplate, limitSqlAdapter, sql, args, mapper, pageSize);
+        return new JdbcPagingList<>(jdbcTemplate, limitSqlAdapter, sql, args, mapper, pageSize);
     }
 }

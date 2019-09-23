@@ -48,7 +48,7 @@ public class TreeController {
 
     private void addUserInfo(Model model, Principal principal) {
         model.addAttribute("principal", principal);
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
         if (principal instanceof SocialClientUserDetails) {
             SocialClientUserDetails user = (SocialClientUserDetails) principal;
             model.addAttribute("userName", user.getUsername());

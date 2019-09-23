@@ -319,7 +319,7 @@ public class NonSnarlMetadataManager extends MetadataManager implements Extended
         }
 
         // Resolve allowed certificates to build the anchors
-        List<X509Certificate> certificates = new LinkedList<X509Certificate>();
+        List<X509Certificate> certificates = new LinkedList<>();
         for (String key : trustedKeys) {
             log.debug("Adding PKIX trust anchor {} for metadata verification of provider {}", key, provider);
             X509Certificate certificate = keyManager.getCertificate(key);
@@ -330,7 +330,7 @@ public class NonSnarlMetadataManager extends MetadataManager implements Extended
             }
         }
 
-        List<PKIXValidationInformation> info = new LinkedList<PKIXValidationInformation>();
+        List<PKIXValidationInformation> info = new LinkedList<>();
         info.add(new BasicPKIXValidationInformation(certificates, null, 4));
         return new StaticPKIXValidationInformationResolver(info, trustedNames);
 
@@ -339,7 +339,7 @@ public class NonSnarlMetadataManager extends MetadataManager implements Extended
     @Override
     protected List<String> parseProvider(MetadataProvider provider) throws MetadataProviderException {
 
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
 
         XMLObject object = provider.getMetadata();
         if (object instanceof EntityDescriptor) {
@@ -662,7 +662,7 @@ public class NonSnarlMetadataManager extends MetadataManager implements Extended
 
         /** Constructor. */
         public ChainingEntitiesDescriptor() throws MetadataProviderException {
-            childDescriptors = new ArrayList<XMLObject>();
+            childDescriptors = new ArrayList<>();
             for (MetadataProvider provider : getProviders()) {
                 childDescriptors.add(provider.getMetadata());
             }
@@ -878,7 +878,7 @@ public class NonSnarlMetadataManager extends MetadataManager implements Extended
 
         /** {@inheritDoc} */
         public List<Validator> getValidators() {
-            return new ArrayList<Validator>();
+            return new ArrayList<>();
         }
 
         /** {@inheritDoc} */

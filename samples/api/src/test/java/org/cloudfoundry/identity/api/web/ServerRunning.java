@@ -185,7 +185,7 @@ public class ServerRunning extends TestWatchman implements RestTemplateHolder, U
     }
 
     public ResponseEntity<String> getForString(String path, HttpHeaders headers) {
-        HttpEntity<Void> request = new HttpEntity<Void>((Void) null, headers);
+        HttpEntity<Void> request = new HttpEntity<>((Void) null, headers);
         return client.exchange(getUrl(path), HttpMethod.GET, request, String.class);
     }
 

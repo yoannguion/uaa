@@ -61,7 +61,7 @@ public class ApprovalsAdminEndpoints implements InitializingBean, ApprovalsContr
 
     private UaaUserDatabase userDatabase;
 
-    private Map<Class<? extends Exception>, HttpStatus> statuses = new HashMap<Class<? extends Exception>, HttpStatus>();
+    private Map<Class<? extends Exception>, HttpStatus> statuses = new HashMap<>();
 
     private HttpMessageConverter<?>[] messageConverters = new RestTemplate().getMessageConverters().toArray(
                     new HttpMessageConverter<?>[0]);
@@ -102,18 +102,18 @@ public class ApprovalsAdminEndpoints implements InitializingBean, ApprovalsContr
         List<Approval> approvals = UaaPagingUtils.subList(input, startIndex, count);
 
         // Find the clients for these approvals
-        Set<String> clientIds = new HashSet<String>();
+        Set<String> clientIds = new HashSet<>();
         for (Approval approval : approvals) {
             clientIds.add(approval.getClientId());
         }
 
         // Find the auto approved scopes for these clients
-        Map<String, Set<String>> clientAutoApprovedScopes = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> clientAutoApprovedScopes = new HashMap<>();
         for (String clientId : clientIds) {
             BaseClientDetails client = (BaseClientDetails) clientDetailsService.loadClientByClientId(clientId, IdentityZoneHolder.get().getId());
 
             Set<String> autoApproved = client.getAutoApproveScopes();
-            Set<String> autoApprovedScopes = new HashSet<String>();
+            Set<String> autoApprovedScopes = new HashSet<>();
             if (autoApproved != null) {
                 if(autoApproved.contains("true")) {
                     autoApprovedScopes.addAll(client.getScope());
@@ -125,7 +125,7 @@ public class ApprovalsAdminEndpoints implements InitializingBean, ApprovalsContr
             clientAutoApprovedScopes.put(clientId, autoApprovedScopes);
         }
 
-        List<Approval> filteredApprovals = new ArrayList<Approval>();
+        List<Approval> filteredApprovals = new ArrayList<>();
         // Remove auto approved scopes
         for (Approval approval : approvals) {
             if (!(clientAutoApprovedScopes.containsKey(approval.getClientId())
@@ -228,8 +228,8 @@ public class ApprovalsAdminEndpoints implements InitializingBean, ApprovalsContr
                 break;
             }
         }
-        return new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e, false),
-                        HttpStatus.valueOf(e.getHttpStatus())), messageConverters);
+        return new ConvertingExceptionView(new ResponseEntity<>(new ExceptionReport(e, false),
+                HttpStatus.valueOf(e.getHttpStatus())), messageConverters);
     }
 
     @Override

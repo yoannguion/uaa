@@ -82,7 +82,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
     private Environment environment;
 
     // Static so that we only test once on failure: speeds up test suite
-    private static Map<Integer, Boolean> serverOnline = new HashMap<Integer, Boolean>();
+    private static Map<Integer, Boolean> serverOnline = new HashMap<>();
 
     private final boolean integrationTest;
 

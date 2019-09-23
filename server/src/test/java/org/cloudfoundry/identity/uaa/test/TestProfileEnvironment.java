@@ -48,7 +48,7 @@ public class TestProfileEnvironment {
 
     private TestProfileEnvironment() {
 
-        List<Resource> resources = new ArrayList<Resource>();
+        List<Resource> resources = new ArrayList<>();
 
         for (String location : DEFAULT_PROFILE_CONFIG_FILE_LOCATIONS) {
             location = environment.resolvePlaceholders(location);

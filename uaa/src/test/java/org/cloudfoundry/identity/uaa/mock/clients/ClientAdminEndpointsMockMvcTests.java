@@ -1762,7 +1762,7 @@ public class ClientAdminEndpointsMockMvcTests {
         String body = result.getResponse().getContentAsString();
 
 
-        SearchResults<BaseClientDetails> clientDetailsSearchResults = JsonUtils.readValue(body, new TypeReference<SearchResults<BaseClientDetails>>() {
+        SearchResults<BaseClientDetails> clientDetailsSearchResults = JsonUtils.readValue(body, new TypeReference<>() {
         });
 
         assertThat(clientDetailsSearchResults.getItemsPerPage(), is(clientMaxCount));
@@ -1800,7 +1800,7 @@ public class ClientAdminEndpointsMockMvcTests {
         String body = result.getResponse().getContentAsString();
 
 
-        SearchResults<BaseClientDetails> clientDetailsSearchResults = JsonUtils.readValue(body, new TypeReference<SearchResults<BaseClientDetails>>() {
+        SearchResults<BaseClientDetails> clientDetailsSearchResults = JsonUtils.readValue(body, new TypeReference<>() {
         });
 
         assertThat(clientDetailsSearchResults.getItemsPerPage(), is(clientMaxCount));
@@ -1862,8 +1862,9 @@ public class ClientAdminEndpointsMockMvcTests {
         ClientDetails client = createClient(adminToken, "testClientForModifyName",
                 SECRET, Collections.singleton("client_credentials"));
 
-        Map<String, Object> requestBody = JsonUtils.readValue(JsonUtils.writeValueAsString(new BaseClientDetails(client)), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> requestBody = JsonUtils.readValue(JsonUtils.writeValueAsString(new BaseClientDetails(client)),
+                new TypeReference<>() {
+                });
         requestBody.put("name", "New Client Name");
 
         MockHttpServletRequestBuilder put = put("/oauth/clients/" + client.getClientId())
@@ -1878,7 +1879,7 @@ public class ClientAdminEndpointsMockMvcTests {
                 .accept(APPLICATION_JSON);
         ResultActions result11 = mockMvc.perform(getClient);
         MockHttpServletResponse response = result11.andReturn().getResponse();
-        Map<String, Object> map = JsonUtils.readValue(response.getContentAsString(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> map = JsonUtils.readValue(response.getContentAsString(), new TypeReference<>() {
         });
         assertThat(map, hasEntry(is("name"), PredicateMatcher.is(value -> value.equals("New Client Name"))));
 

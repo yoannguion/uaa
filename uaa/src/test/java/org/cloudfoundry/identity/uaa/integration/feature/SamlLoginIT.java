@@ -978,7 +978,7 @@ public class SamlLoginIT {
         assertNotNull(idToken);
 
         Jwt idTokenClaims = JwtHelper.decode(idToken);
-        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
         });
 
         assertNotNull(claims.get(USER_ATTRIBUTES));
@@ -1099,7 +1099,7 @@ public class SamlLoginIT {
         ResponseEntity<String> response = new RestTemplate().exchange(new URI(spAudienceEndpoint), HttpMethod.POST, new HttpEntity<MultiValueMap>(postBody, headers), String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> tokenResponse = JsonUtils.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokenResponse = JsonUtils.readValue(response.getBody(), new TypeReference<>() {
         });
         assertNotNull("Expecting access_token to be present in response", tokenResponse.get("access_token"));
     }
@@ -1205,7 +1205,7 @@ public class SamlLoginIT {
         assertNotNull(idToken);
 
         Jwt idTokenClaims = JwtHelper.decode(idToken);
-        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(idTokenClaims.getClaims(), new TypeReference<>() {
         });
 
         assertNotNull(claims.get(USER_ATTRIBUTES));

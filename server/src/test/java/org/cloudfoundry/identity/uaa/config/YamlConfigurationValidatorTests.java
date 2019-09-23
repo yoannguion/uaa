@@ -40,7 +40,7 @@ public class YamlConfigurationValidatorTests {
     private YamlConfigurationValidator<Foo> validator;
 
     private Foo createFoo(final String yaml) throws Exception {
-        validator = new YamlConfigurationValidator<Foo>(new FooConstructor());
+        validator = new YamlConfigurationValidator<>(new FooConstructor());
         validator.setYaml(yaml);
         validator.setExceptionIfInvalid(true);
         validator.afterPropertiesSet();

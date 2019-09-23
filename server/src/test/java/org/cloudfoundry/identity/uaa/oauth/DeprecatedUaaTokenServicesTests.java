@@ -2023,8 +2023,8 @@ public class DeprecatedUaaTokenServicesTests {
               tokenSupport.tokens.get(accessToken.getValue()).getValue() :
               accessToken.getValue();
             Map<String, Object> claims = JsonUtils.readValue(JwtHelper.decode(atValue).getClaims(),
-              new TypeReference<Map<String, Object>>() {
-              });
+                    new TypeReference<>() {
+                    });
 
             assertNotNull(claims.get("ext_attr"));
             assertEquals("test", ((Map) claims.get("ext_attr")).get("purpose"));

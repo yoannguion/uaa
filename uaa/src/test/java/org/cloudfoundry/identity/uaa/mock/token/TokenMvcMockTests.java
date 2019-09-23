@@ -207,7 +207,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
         Map<String, Object> tokenResponse = JsonUtils.readValue(
                 result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>() {
+                new TypeReference<>() {
                 }
         );
 
@@ -296,7 +296,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
         Map<String, Object> errorResponse = JsonUtils.readValue(
                 result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>() {
+                new TypeReference<>() {
                 }
         );
 
@@ -317,7 +317,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         MvcResult result = doPasswordGrant(username, SECRET, clientId, SECRET, status().isBadRequest());
         Map<String, Object> errorResponse = JsonUtils.readValue(
                 result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>() {
+                new TypeReference<>() {
                 }
         );
 
@@ -391,7 +391,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, String> error = (JsonUtils.readValue(response, new TypeReference<Map<String, String>>() {
+        Map<String, String> error = (JsonUtils.readValue(response, new TypeReference<>() {
         }));
         String error_description = error.get("error_description");
         assertNotNull(error_description);
@@ -426,7 +426,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<>() {
         });
         Object accessToken = tokens.get(ACCESS_TOKEN);
         Object jti = tokens.get(JTI);
@@ -469,7 +469,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .param("password", SECRET))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<>() {
         });
         String scopes = (String) tokens.get(SCOPE);
         assertThat(scopes, containsString("uaa.admin"));
@@ -515,7 +515,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .param("password", SECRET))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<>() {
         });
         Object accessToken = tokens.get(ACCESS_TOKEN);
         Object refreshToken = tokens.get(REFRESH_TOKEN);
@@ -538,7 +538,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        tokens = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {
+        tokens = JsonUtils.readValue(response, new TypeReference<>() {
         });
         accessToken = tokens.get(ACCESS_TOKEN);
         refreshToken = tokens.get(REFRESH_TOKEN);
@@ -1370,7 +1370,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
         assertNotNull("Token body must not be null.", body);
         assertThat(body, stringContainsInOrder(Arrays.asList(ACCESS_TOKEN, REFRESH_TOKEN)));
-        Map<String, Object> map = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> map = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String accessToken = (String) map.get("access_token");
         OAuth2Authentication token = tokenServices.loadAuthentication(accessToken);
@@ -1882,7 +1882,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> tokenResponse = JsonUtils.readValue(tokenString, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokenResponse = JsonUtils.readValue(tokenString, new TypeReference<>() {
         });
         String accessToken = (String) tokenResponse.get("access_token");
 
@@ -2488,7 +2488,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
         Jwt tokenJwt = JwtHelper.decode(token);
 
-        Map<String, Object> claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(tokenJwt.getClaims(), new TypeReference<>() {
         });
         Integer expirationTime = (Integer) claims.get(ClaimConstants.EXP);
 
@@ -3092,11 +3092,11 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         assertNotNull(bodyMap.get("access_token"));
         Jwt jwt = JwtHelper.decode((String) bodyMap.get("access_token"));
-        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
         });
         assertNotNull(claims.get(ClaimConstants.AUTHORITIES));
         assertNotNull(claims.get(ClaimConstants.AZP));
@@ -3164,7 +3164,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String access_token = (String) bodyMap.get("access_token");
         assertNotNull(access_token);
@@ -3195,7 +3195,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
 
-            Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
             });
             String access_token = (String) bodyMap.get("access_token");
             assertNotNull(access_token);
@@ -3222,7 +3222,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String access_token = (String) bodyMap.get("access_token");
         assertNotNull(access_token);
@@ -3257,7 +3257,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String access_token = (String) bodyMap.get("access_token");
         assertNotNull(access_token);
@@ -3288,7 +3288,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String access_token = (String) bodyMap.get("access_token");
         assertNotNull(access_token);
@@ -3317,11 +3317,11 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
 
-            Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
             });
             assertNotNull(bodyMap.get("access_token"));
             Jwt jwt = JwtHelper.decode((String) bodyMap.get("access_token"));
-            Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+            Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
             });
             assertNull(claims.get(ClaimConstants.AUTHORITIES));
             assertNull(claims.get(ClaimConstants.AZP));
@@ -3727,7 +3727,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         assertTrue("Token must be a string", tokenResponse.get(tokenKey) instanceof String);
         String token = (String) tokenResponse.get(tokenKey);
         Jwt jwt = JwtHelper.decode(token);
-        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
         });
         assertNotNull("Token revocation signature must exist", claims.get(ClaimConstants.REVOCATION_SIGNATURE));
         assertTrue("Token revocation signature must be a string", claims.get(ClaimConstants.REVOCATION_SIGNATURE) instanceof String);
@@ -3749,7 +3749,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         assertNotNull("Token should have been stored in the DB", revocableToken);
 
         Jwt jwt = JwtHelper.decode(revocableToken.getValue());
-        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
         });
         assertNotNull("Revocable claim must exist", claims.get(ClaimConstants.REVOCABLE));
         assertTrue("Token revocable claim must be set to true", (Boolean) claims.get(ClaimConstants.REVOCABLE));
@@ -3778,7 +3778,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                     mockMvc.perform(post)
                             .andDo(print())
                             .andExpect(status().isOk())
-                            .andReturn().getResponse().getContentAsString(), new TypeReference<Map<String, Object>>() {
+                            .andReturn().getResponse().getContentAsString(), new TypeReference<>() {
                     });
             validateRevocableJwtToken(tokenResponse, defaultZone);
         } finally {
@@ -3820,7 +3820,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String accessToken = (String) bodyMap.get("access_token");
         assertNotNull(accessToken);
@@ -3845,7 +3845,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.readValue(body, new TypeReference<>() {
         });
         String refreshToken = (String) bodyMap.get("refresh_token");
 
@@ -3878,7 +3878,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         String accessTokenHeaderRaw = tokenResponse.getValue().split("\\.")[0];
         String accessTokenHeaderJson = new String(java.util.Base64.getDecoder().decode(accessTokenHeaderRaw));
         Map<String, Object> headerMap =
-                JsonUtils.readValue(accessTokenHeaderJson, new TypeReference<Map<String, Object>>() {
+                JsonUtils.readValue(accessTokenHeaderJson, new TypeReference<>() {
                 });
 
         assertThat(headerMap.get("jku"), is("https://localhost:8080/uaa/token_keys"));
@@ -3909,7 +3909,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         String refreshTokenHeaderRaw = tokenResponse.getRefreshToken().getValue().split("\\.")[0];
         String refreshTokenHeaderJson = new String(java.util.Base64.getDecoder().decode(refreshTokenHeaderRaw));
         Map<String, Object> headerMap =
-                JsonUtils.readValue(refreshTokenHeaderJson, new TypeReference<Map<String, Object>>() {
+                JsonUtils.readValue(refreshTokenHeaderJson, new TypeReference<>() {
                 });
 
         assertThat(headerMap.get("jku"), is("https://localhost:8080/uaa/token_keys"));
@@ -3941,7 +3941,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         String idTokenHeaderRaw = tokenResponse.getIdTokenValue().split("\\.")[0];
         String idTokenHeaderJson = new String(java.util.Base64.getDecoder().decode(idTokenHeaderRaw));
         Map<String, Object> headerMap =
-                JsonUtils.readValue(idTokenHeaderJson, new TypeReference<Map<String, Object>>() {
+                JsonUtils.readValue(idTokenHeaderJson, new TypeReference<>() {
                 });
 
         assertThat(headerMap.get("jku"), is("https://localhost:8080/uaa/token_keys"));
@@ -4071,7 +4071,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
             int i = pair.indexOf("=");
             String key = i > 0 ? URLDecoder.decode(pair.substring(0, i), "UTF-8") : pair;
             if (!params.containsKey(key)) {
-                params.put(key, new LinkedList<String>());
+                params.put(key, new LinkedList<>());
             }
             String value = i > 0 && pair.length() > i + 1 ? URLDecoder.decode(pair.substring(i + 1), "UTF-8") : null;
             params.get(key).add(value);
@@ -4262,7 +4262,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
         assertThat("Token must be longer than 36 characters", token.length(), greaterThan(36));
 
         Jwt jwt = JwtHelper.decode(token);
-        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
         });
         assertNotNull("JTI Claim should be present", claims.get(JTI));
         String tokenId = (String) claims.get(JTI);
@@ -4274,7 +4274,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
 
         jwt = JwtHelper.decode(revocableToken.getValue());
-        claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
         });
         assertNotNull("Revocable claim must exist", claims.get(ClaimConstants.REVOCABLE));
         assertTrue("Token revocable claim must be set to true", (Boolean) claims.get(ClaimConstants.REVOCABLE));
@@ -4303,7 +4303,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
                 mockMvc.perform(post)
                         .andDo(print())
                         .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(), new TypeReference<Map<String, Object>>() {
+                        .andReturn().getResponse().getContentAsString(), new TypeReference<>() {
                 });
 
     }
@@ -4359,7 +4359,7 @@ public class TokenMvcMockTests extends AbstractTokenMockMvcTests {
 
         if (authorizationRequest.getResourceIds() != null) {
             authorizationRequestMap.put("resourceIds",
-                    Collections.unmodifiableSet(new HashSet<String>(authorizationRequest.getResourceIds())));
+                    Collections.unmodifiableSet(new HashSet<>(authorizationRequest.getResourceIds())));
         }
         if (authorizationRequest.getAuthorities() != null) {
             authorizationRequestMap.put("authorities",

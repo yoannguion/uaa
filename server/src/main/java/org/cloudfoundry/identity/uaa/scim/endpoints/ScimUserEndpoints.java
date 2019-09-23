@@ -99,13 +99,13 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
 
     private static final Random passwordGenerator = new SecureRandom();
 
-    private final Map<String, AtomicInteger> errorCounts = new ConcurrentHashMap<String, AtomicInteger>();
+    private final Map<String, AtomicInteger> errorCounts = new ConcurrentHashMap<>();
 
     private AtomicInteger scimUpdates = new AtomicInteger();
 
     private AtomicInteger scimDeletes = new AtomicInteger();
 
-    private Map<Class<? extends Exception>, HttpStatus> statuses = new HashMap<Class<? extends Exception>, HttpStatus>();
+    private Map<Class<? extends Exception>, HttpStatus> statuses = new HashMap<>();
 
     private HttpMessageConverter<?>[] messageConverters = new RestTemplate().getMessageConverters().toArray(
                     new HttpMessageConverter<?>[0]);
@@ -352,7 +352,7 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
             count = userMaxCount;
         }
 
-        List<ScimUser> input = new ArrayList<ScimUser>();
+        List<ScimUser> input = new ArrayList<>();
         List<ScimUser> result;
         Set<String> attributes = StringUtils.commaDelimitedListToSet(attributesCommaSeparated);
         try {
@@ -440,7 +440,7 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
         Set<ScimGroup> directGroups = membershipManager.getGroupsWithMember(user.getId(), false, identityZoneManager.getCurrentIdentityZoneId());
         Set<ScimGroup> indirectGroups = membershipManager.getGroupsWithMember(user.getId(), true, identityZoneManager.getCurrentIdentityZoneId());
         indirectGroups.removeAll(directGroups);
-        Set<ScimUser.Group> groups = new HashSet<ScimUser.Group>();
+        Set<ScimUser.Group> groups = new HashSet<>();
         for (ScimGroup group : directGroups) {
             groups.add(new ScimUser.Group(group.getId(), group.getDisplayName(), ScimUser.Group.Type.DIRECT));
         }
@@ -456,8 +456,9 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
         if (user == null || approvalStore == null) {
             return user;
         }
-        Set<Approval> approvals = new HashSet<Approval>(approvalStore.getApprovalsForUser(user.getId(), identityZoneManager.getCurrentIdentityZoneId()));
-        Set<Approval> active = new HashSet<Approval>(approvals);
+        Set<Approval> approvals = new HashSet<>(approvalStore.getApprovalsForUser(user.getId(),
+                identityZoneManager.getCurrentIdentityZoneId()));
+        Set<Approval> active = new HashSet<>(approvals);
         for (Approval approval : approvals) {
             if (!approval.isActiveAsOf(new Date())) {
                 active.remove(approval);

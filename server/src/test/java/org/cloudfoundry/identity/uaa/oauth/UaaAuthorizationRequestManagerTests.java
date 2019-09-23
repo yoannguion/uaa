@@ -53,7 +53,7 @@ class UaaAuthorizationRequestManagerTests {
 
     private IdentityProviderProvisioning providerProvisioning = mock(IdentityProviderProvisioning.class);
 
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> parameters = new HashMap<>();
 
     private BaseClientDetails client = new BaseClientDetails();
 
@@ -165,7 +165,7 @@ class UaaAuthorizationRequestManagerTests {
     void testScopeIncludesAuthoritiesForUser() {
         client.setScope(StringUtils.commaDelimitedListToSet("one,two,foo.bar"));
         AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-        assertEquals(StringUtils.commaDelimitedListToSet("foo.bar"), new TreeSet<String>(request.getScope()));
+        assertEquals(StringUtils.commaDelimitedListToSet("foo.bar"), new TreeSet<>(request.getScope()));
         factory.validateParameters(request.getRequestParameters(), client);
     }
 
@@ -175,7 +175,8 @@ class UaaAuthorizationRequestManagerTests {
         when(mockSecurityContextAccessor.getAuthorities()).thenReturn((Collection)AuthorityUtils.commaSeparatedStringToAuthorityList("space.1.developer,space.2.developer,space.1.admin"));
         client.setScope(StringUtils.commaDelimitedListToSet("space.*.developer"));
         AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-        assertEquals(StringUtils.commaDelimitedListToSet("space.1.developer,space.2.developer"), new TreeSet<String>(request.getScope()));
+        assertEquals(StringUtils.commaDelimitedListToSet("space.1.developer,space.2.developer"),
+                new TreeSet<>(request.getScope()));
         factory.validateParameters(request.getRequestParameters(), client);
     }
 
@@ -185,15 +186,15 @@ class UaaAuthorizationRequestManagerTests {
         IdentityZoneHolder.get().getConfig().getUserConfig().setDefaultGroups(Collections.singletonList("openid"));
         client.setScope(StringUtils.commaDelimitedListToSet("openid,foo.bar"));
         AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo.bar"), new TreeSet<String>(request.getScope()));
-        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo"), new TreeSet<String>(request.getResourceIds()));
+        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo.bar"), new TreeSet<>(request.getScope()));
+        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo"), new TreeSet<>(request.getResourceIds()));
     }
 
     @Test
     void testEmptyScopeOkForClientWithNoScopes() {
         client.setScope(StringUtils.commaDelimitedListToSet("")); // empty
         AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-        assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<String>(request.getScope()));
+        assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<>(request.getScope()));
     }
 
     @Test

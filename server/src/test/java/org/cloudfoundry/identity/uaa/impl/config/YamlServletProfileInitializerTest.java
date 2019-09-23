@@ -264,7 +264,7 @@ class YamlServletProfileInitializerTest {
         ArgumentCaptor<String> servletLogCaptor = ArgumentCaptor.forClass(String.class);
         when(context.getResource(ArgumentMatchers.eq("file:foo/uaa.yml")))
                 .thenReturn(new ByteArrayResource(("logging:\n  config: " + tomcatLogConfig).getBytes()));
-        environment.getPropertySources().addFirst(new PropertySource<Object>(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME) {
+        environment.getPropertySources().addFirst(new PropertySource<>(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME) {
             @Override
             public boolean containsProperty(String name) {
                 if ("LOGGING_CONFIG".equals(name)) {

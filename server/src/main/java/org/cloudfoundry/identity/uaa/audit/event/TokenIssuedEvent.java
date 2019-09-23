@@ -47,7 +47,8 @@ public class TokenIssuedEvent extends AbstractUaaEvent {
     private String getPrincipalId() {
         OAuth2AccessToken token = getSource();
         Jwt jwt = JwtHelper.decode(token.getValue());
-        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> claims = JsonUtils.readValue(jwt.getClaims(), new TypeReference<>() {
+        });
         return (claims.get("user_id") != null ? claims.get("user_id") : claims.get("client_id")).toString();
     }
 }

@@ -52,7 +52,7 @@ public class ProfileActiveUtils {
     }
 
     private static List<String> getBlacklist(UnlessProfileActive unlessProfileActive) {
-        List<String> blacklist = new ArrayList<String>();
+        List<String> blacklist = new ArrayList<>();
         if (unlessProfileActive != null) {
             if (StringUtils.hasText(unlessProfileActive.value())) {
                 blacklist.add(unlessProfileActive.value());

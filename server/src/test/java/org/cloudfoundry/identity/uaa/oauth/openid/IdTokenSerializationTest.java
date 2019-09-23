@@ -25,12 +25,12 @@ public class IdTokenSerializationTest {
 
     @Before
     public void setup() {
-        Set<String> amr = new HashSet<String>() {{
+        Set<String> amr = new HashSet<>() {{
             add("amr1");
             add("amr2");
         }};
 
-        Set<String> acr = new HashSet<String>() {{
+        Set<String> acr = new HashSet<>() {{
             add("acr1");
             add("acr2");
         }};

@@ -45,17 +45,17 @@ public class ConvertingExceptionViewTests {
     @Test
     public void testGetContentType() throws Exception {
         RuntimeException e = new RuntimeException("Unexpected error");
-        view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
-                        HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
+        view = new ConvertingExceptionView(new ResponseEntity<>(new ExceptionReport(e),
+                HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
         assertEquals("*/*", view.getContentType());
     }
 
     @Test
     public void testRender() throws Exception {
         RuntimeException e = new RuntimeException("Unexpected error");
-        view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
-                        HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
-        view.render(new HashMap<String, Object>(), request, response);
+        view = new ConvertingExceptionView(new ResponseEntity<>(new ExceptionReport(e),
+                HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
+        view.render(new HashMap<>(), request, response);
         assertNotNull(response.getContentAsString());
     }
 

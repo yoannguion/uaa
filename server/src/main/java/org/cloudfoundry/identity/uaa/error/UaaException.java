@@ -104,7 +104,7 @@ public class UaaException extends RuntimeException {
      */
     public void addAdditionalInformation(String key, String value) {
         if (this.additionalInformation == null) {
-            this.additionalInformation = new TreeMap<String, String>();
+            this.additionalInformation = new TreeMap<>();
         }
 
         this.additionalInformation.put(key, value);

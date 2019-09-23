@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class InMemoryApprovalStore implements ApprovalStore {
 
-    private ArrayList<Approval> store = new ArrayList<Approval>();
+    private ArrayList<Approval> store = new ArrayList<>();
 
     @Override
     public boolean addApproval(Approval approval, final String zoneId) {
@@ -41,7 +41,7 @@ public class InMemoryApprovalStore implements ApprovalStore {
 
     @Override
     public List<Approval> getApprovals(String userName, String clientId, final String zoneId) {
-        ArrayList<Approval> returnList = new ArrayList<Approval>();
+        ArrayList<Approval> returnList = new ArrayList<>();
 
         for (Approval a : store) {
             if (a.getUserId().equals(userName) && a.getClientId().equals(clientId)) {

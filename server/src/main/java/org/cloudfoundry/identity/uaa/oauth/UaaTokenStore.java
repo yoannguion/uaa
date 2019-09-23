@@ -176,7 +176,8 @@ public class UaaTokenStore implements AuthorizationCodeServices {
     }
 
     protected OAuth2Authentication deserializeOauth2Authentication(byte[] data) {
-        Map<String,Object> map = JsonUtils.readValue(data, new TypeReference<Map<String,Object>>() {});
+        Map<String,Object> map = JsonUtils.readValue(data, new TypeReference<>() {
+        });
         Authentication userAuthentication = null;
         if (map.get(USER_AUTHENTICATION_UAA_AUTHENTICATION) != null) {
             userAuthentication = JsonUtils.readValue((String)map.get(USER_AUTHENTICATION_UAA_AUTHENTICATION), UaaAuthentication.class);
@@ -205,7 +206,7 @@ public class UaaTokenStore implements AuthorizationCodeServices {
             new HashSet<>(resourceIds),
             redirectUri,
             new HashSet<>(responseTypes),
-            new HashMap<String,Serializable>()
+                new HashMap<>()
         );
 
         return new OAuth2Authentication(request, userAuthentication);

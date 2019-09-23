@@ -133,7 +133,7 @@ public class ImplicitGrantIT {
 
         Jwt access_token = JwtHelper.decode(params.getFirst("access_token"));
 
-        Map<String, Object> claims = JsonUtils.readValue(access_token.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(access_token.getClaims(), new TypeReference<>() {
         });
 
         Assert.assertThat((String) claims.get("jti"), is(params.getFirst("jti")));

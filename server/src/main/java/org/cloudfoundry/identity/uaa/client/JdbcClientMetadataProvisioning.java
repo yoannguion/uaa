@@ -133,7 +133,8 @@ public class JdbcClientMetadataProvisioning implements ClientMetadataProvisionin
             clientMetadata.setCreatedBy(rs.getString("created_by"));
             String json = rs.getString("additional_information");
             if (hasText(json)) {
-                Map<String,Object> additionalInformation = JsonUtils.readValue(json, new TypeReference<Map<String,Object>>() {});
+                Map<String,Object> additionalInformation = JsonUtils.readValue(json, new TypeReference<>() {
+                });
                 clientMetadata.setClientName((String)additionalInformation.get(CLIENT_NAME));
             }
             return clientMetadata;

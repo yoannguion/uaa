@@ -103,7 +103,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones"),
                 HttpMethod.POST,
                 new HttpEntity<>(requestBody, headers),
-                new ParameterizedTypeReference<Void>() {});
+                new ParameterizedTypeReference<>() {
+                });
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
@@ -132,7 +133,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-providers"),
                 HttpMethod.GET,
                 new HttpEntity<>(null, headers),
-                new ParameterizedTypeReference<List<IdentityProvider>>() {});
+                new ParameterizedTypeReference<>() {
+                });
 
         IdentityProvider identityProvider = idpList.getBody().get(0);
         assertThat(identityProvider.getIdentityZoneId(), is(zoneId));
@@ -154,7 +156,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones"),
                 HttpMethod.POST,
                 new HttpEntity<>(idZone),
-                new ParameterizedTypeReference<Void>() {},
+                new ParameterizedTypeReference<>() {
+                },
                 id);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
@@ -166,7 +169,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones/"+id+"/clients"),
                 HttpMethod.POST,
                 new HttpEntity<>(clientDetails),
-                new ParameterizedTypeReference<Void>() {},
+                new ParameterizedTypeReference<>() {
+                },
                 id);
 
         assertEquals(HttpStatus.CREATED, clientCreateResponse.getStatusCode());
@@ -175,7 +179,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones/"+id+"/clients/"+clientDetails.getClientId()),
                 HttpMethod.DELETE,
                 null,
-                new ParameterizedTypeReference<Void>() {},
+                new ParameterizedTypeReference<>() {
+                },
                 id);
 
         assertEquals(HttpStatus.OK, clientDeleteResponse.getStatusCode());
@@ -193,7 +198,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones"),
                 HttpMethod.POST,
                 new HttpEntity<>(idZone1),
-                new ParameterizedTypeReference<Void>() {},
+                new ParameterizedTypeReference<>() {
+                },
                 id1);
         assertEquals(HttpStatus.CREATED, response1.getStatusCode());
 
@@ -206,7 +212,8 @@ public class IdentityZoneEndpointsIntegrationTests {
                 serverRunning.getUrl("/identity-zones"),
                 HttpMethod.POST,
                 new HttpEntity<>(idZone2),
-                new ParameterizedTypeReference<Map<String,String>>() {},
+                new ParameterizedTypeReference<>() {
+                },
                 id2);
         assertEquals(HttpStatus.CONFLICT, response2.getStatusCode());
         Assert.assertTrue(response2.getBody().get("error_description").toLowerCase().contains("subdomain"));

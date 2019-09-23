@@ -41,7 +41,8 @@ public class LdapProviderDefinitionDeserializeTests {
             "  \"originKey\": \"ldap\",\n" +
             "  \"type\": \"ldap\"\n" +
             "}";
-        IdentityProvider<LdapIdentityProviderDefinition> def = JsonUtils.readValue(json, new TypeReference<IdentityProvider<LdapIdentityProviderDefinition>>() {});
+        IdentityProvider<LdapIdentityProviderDefinition> def = JsonUtils.readValue(json, new TypeReference<>() {
+        });
         assertEquals(OriginKeys.LDAP, def.getType());
         assertEquals("ldap://test-identity-provider-9bmlg.url",def.getConfig().getBaseUrl());
     }
@@ -55,7 +56,8 @@ public class LdapProviderDefinitionDeserializeTests {
             "\t\"originKey\": \"ldap\",\n" +
             "\t\"type\": \"ldap\"\n" +
             "}";
-        IdentityProvider<LdapIdentityProviderDefinition> def = JsonUtils.readValue(json, new TypeReference<IdentityProvider<LdapIdentityProviderDefinition>>() {});
+        IdentityProvider<LdapIdentityProviderDefinition> def = JsonUtils.readValue(json, new TypeReference<>() {
+        });
         assertEquals(OriginKeys.LDAP, def.getType());
         assertEquals("ldap://test-identity-provider-9bmlg.url",def.getConfig().getBaseUrl());
     }

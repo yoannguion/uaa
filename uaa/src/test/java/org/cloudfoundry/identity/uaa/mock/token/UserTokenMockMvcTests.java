@@ -88,7 +88,8 @@ class UserTokenMockMvcTests extends AbstractTokenMockMvcTests {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        Map<String,Object> result = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {});
+        Map<String,Object> result = JsonUtils.readValue(response, new TypeReference<>() {
+        });
 
         String refreshToken = (String)result.get(REFRESH_TOKEN);
         assertNotNull(refreshToken);
@@ -111,7 +112,8 @@ class UserTokenMockMvcTests extends AbstractTokenMockMvcTests {
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
-        result = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {});
+        result = JsonUtils.readValue(response, new TypeReference<>() {
+        });
     }
 
     @Test

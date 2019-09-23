@@ -157,12 +157,12 @@ public class SpringSecurityLdapTemplate extends LdapTemplate {
         String formattedFilter = MessageFormat.format(filter, encodedParams);
         logger.debug("Using filter: " + formattedFilter);
 
-        final HashSet<Map<String, String[]>> set = new HashSet<Map<String, String[]>>();
+        final HashSet<Map<String, String[]>> set = new HashSet<>();
 
         ContextMapper roleMapper = new ContextMapper() {
             public Object mapFromContext(Object ctx) {
                 DirContextAdapter adapter = (DirContextAdapter) ctx;
-                Map<String, String[]> record = new HashMap<String, String[]>();
+                Map<String, String[]> record = new HashMap<>();
                 for (String attributeName : attributeNames) {
                     String[] values = adapter.getStringAttributes(attributeName);
                     if (values == null || values.length == 0) {
@@ -202,7 +202,7 @@ public class SpringSecurityLdapTemplate extends LdapTemplate {
             final String attributeName) {
         String[] attributeNames = new String[] {attributeName};
         Set<Map<String,String[]>> multipleAttributeValues = searchForMultipleAttributeValues(base,filter,params,attributeNames);
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         for (Map<String,String[]> map : multipleAttributeValues) {
             String[] values = map.get(attributeName);
             if (values!=null && values.length>0) {
@@ -251,7 +251,7 @@ public class SpringSecurityLdapTemplate extends LdapTemplate {
                     + "', base = '" + searchBaseDn + "', filter = '" + filter + "'");
         }
 
-        Set<DirContextOperations> results = new HashSet<DirContextOperations>();
+        Set<DirContextOperations> results = new HashSet<>();
         try {
             while (resultsEnum.hasMore()) {
                 SearchResult searchResult = resultsEnum.next();

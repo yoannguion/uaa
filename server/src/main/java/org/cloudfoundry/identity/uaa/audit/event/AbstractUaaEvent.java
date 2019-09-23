@@ -110,7 +110,8 @@ public abstract class AbstractUaaEvent extends ApplicationEvent {
                 try {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> map =
-                        JsonUtils.readValue((String)caller.getDetails(), new TypeReference<Map<String,Object>>(){});
+                        JsonUtils.readValue((String)caller.getDetails(), new TypeReference<>() {
+                        });
                     if (map.containsKey("remoteAddress")) {
                         builder.append("remoteAddress=").append(map.get("remoteAddress")).append(", ");
                     }
@@ -141,7 +142,7 @@ public abstract class AbstractUaaEvent extends ApplicationEvent {
             if (isJwtToken(tokenValue)) {
                 try {
                     Jwt token = JwtHelper.decode(tokenValue);
-                    Map<String, Object> claims = JsonUtils.readValue(token.getClaims(), new TypeReference<Map<String, Object>>() {
+                    Map<String, Object> claims = JsonUtils.readValue(token.getClaims(), new TypeReference<>() {
                     });
                     String issuer = claims.get(ClaimConstants.ISS).toString();
                     String subject = claims.get(ClaimConstants.SUB).toString();
@@ -163,7 +164,7 @@ public abstract class AbstractUaaEvent extends ApplicationEvent {
             a = new Authentication() {
                 private static final long serialVersionUID = 1748694836774597624L;
 
-                ArrayList<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+                ArrayList<GrantedAuthority> authorities = new ArrayList<>();
                 @Override
                 public Collection<? extends GrantedAuthority> getAuthorities() {
                     return authorities;

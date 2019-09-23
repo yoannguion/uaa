@@ -575,8 +575,9 @@ public abstract class AbstractLdapMockMvcTest {
                 .getContentAsString();
 
         assertThat(response, not(containsString("bindPassword")));
-        IdentityProvider<LdapIdentityProviderDefinition> provider = JsonUtils.readValue(response, new TypeReference<IdentityProvider<LdapIdentityProviderDefinition>>() {
-        });
+        IdentityProvider<LdapIdentityProviderDefinition> provider = JsonUtils.readValue(response,
+                new TypeReference<>() {
+                });
         assertNull(provider.getConfig().getBindPassword());
 
         getMockMvc().perform(
@@ -709,19 +710,19 @@ public abstract class AbstractLdapMockMvcTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> tokens = JsonUtils.readValue(response, new TypeReference<>() {
         });
 
         String accessToken = (String) tokens.get(ACCESS_TOKEN);
         Jwt accessTokenJwt = JwtHelper.decode(accessToken);
-        Map<String, Object> accessTokenClaims = JsonUtils.readValue(accessTokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> accessTokenClaims = JsonUtils.readValue(accessTokenJwt.getClaims(), new TypeReference<>() {
         });
         List<String> accessTokenScopes = (List<String>) accessTokenClaims.get("scope");
         // Check that the user had the roles scope, which is a pre-requisite for getting roles returned in the id_token
         assertThat(accessTokenScopes, hasItem("roles"));
 
         Jwt idTokenJwt = JwtHelper.decode((String) tokens.get("id_token"));
-        Map<String, Object> claims = JsonUtils.readValue(idTokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> claims = JsonUtils.readValue(idTokenJwt.getClaims(), new TypeReference<>() {
         });
         List<String> idTokenRoles = (List<String>) claims.get("roles");
         assertThat(idTokenRoles, containsInAnyOrder(expectedGroups));
@@ -735,7 +736,7 @@ public abstract class AbstractLdapMockMvcTest {
         )
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        Map<String, Object> userInfo = JsonUtils.readValue(userInfoContent, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> userInfo = JsonUtils.readValue(userInfoContent, new TypeReference<>() {
         });
         List<String> userInfoRoles = (List<String>) userInfo.get("roles");
         assertThat(userInfoRoles, containsInAnyOrder(expectedGroups));
@@ -756,11 +757,12 @@ public abstract class AbstractLdapMockMvcTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        Map<String, Object> refreshedTokens = JsonUtils.readValue(refreshTokenResponse, new TypeReference<Map<String, Object>>() {
+        Map<String, Object> refreshedTokens = JsonUtils.readValue(refreshTokenResponse, new TypeReference<>() {
         });
         Jwt refreshedIdTokenJwt = JwtHelper.decode((String) refreshedTokens.get("id_token"));
-        Map<String, Object> refreshedClaims = JsonUtils.readValue(refreshedIdTokenJwt.getClaims(), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> refreshedClaims = JsonUtils.readValue(refreshedIdTokenJwt.getClaims(),
+                new TypeReference<>() {
+                });
         List<String> refreshedIdTokenRoles = (List<String>) refreshedClaims.get("roles");
         assertThat(refreshedIdTokenRoles, containsInAnyOrder(expectedGroups));
     }
