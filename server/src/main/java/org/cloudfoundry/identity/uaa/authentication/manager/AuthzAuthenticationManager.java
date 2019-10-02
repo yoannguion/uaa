@@ -1,15 +1,3 @@
-/*******************************************************************************
- *     Cloud Foundry
- *     Copyright (c) [2009-2016] Pivotal Software, Inc. All Rights Reserved.
- *
- *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
- *     You may not use this product except in compliance with the License.
- *
- *     This product includes a number of subcomponents with
- *     separate copyright notices and license terms. Your use of these
- *     subcomponents is subject to the terms and conditions of the
- *     subcomponent's license, as noted in the LICENSE file.
- *******************************************************************************/
 package org.cloudfoundry.identity.uaa.authentication.manager;
 
 import org.cloudfoundry.identity.uaa.authentication.AccountNotVerifiedException;
@@ -34,6 +22,7 @@ import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
@@ -60,7 +49,10 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     private String origin;
     private boolean allowUnverifiedUsers = true;
 
-    public AuthzAuthenticationManager(UaaUserDatabase userDatabase, PasswordEncoder encoder, IdentityProviderProvisioning providerProvisioning) {
+    public AuthzAuthenticationManager(
+            final UaaUserDatabase userDatabase,
+            final PasswordEncoder encoder,
+            final IdentityProviderProvisioning providerProvisioning) {
         this.userDatabase = userDatabase;
         this.encoder = encoder;
         this.providerProvisioning = providerProvisioning;
@@ -79,7 +71,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
         UaaUser user = getUaaUser(req);
 
         if (user == null) {
-            logger.debug("No user named '" + req.getName() + "' was found for origin:"+ origin);
+            logger.debug("No user named '" + req.getName() + "' was found for origin:" + origin);
             publish(new UserNotFoundEvent(req, IdentityZoneHolder.getCurrentZoneId()));
         } else {
             if (!accountLoginPolicy.isAllowed(user, req)) {
@@ -97,7 +89,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
                 publish(new IdentityProviderAuthenticationFailureEvent(req, req.getName(), OriginKeys.UAA, IdentityZoneHolder.getCurrentZoneId()));
                 publish(new UserAuthenticationFailureEvent(user, req, IdentityZoneHolder.getCurrentZoneId()));
             } else {
-                logger.debug("Password successfully matched for userId["+user.getUsername()+"]:"+user.getId());
+                logger.debug("Password successfully matched for userId[" + user.getUsername() + "]:" + user.getId());
 
                 if (!(allowUnverifiedUsers && user.isLegacyVerificationBehavior()) && !user.isVerified()) {
                     publish(new UnverifiedUserAuthenticationEvent(user, req, IdentityZoneHolder.getCurrentZoneId()));
@@ -116,15 +108,15 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
 
                 success.setAuthenticationMethods(Collections.singleton("pwd"));
                 Date passwordNewerThan = getPasswordNewerThan();
-                if(passwordNewerThan != null) {
-                    if(user.getPasswordLastModified() == null || (passwordNewerThan.getTime() > user.getPasswordLastModified().getTime())) {
-                        logger.info("Password change required for user: "+user.getEmail());
+                if (passwordNewerThan != null) {
+                    if (user.getPasswordLastModified() == null || (passwordNewerThan.getTime() > user.getPasswordLastModified().getTime())) {
+                        logger.info("Password change required for user: " + user.getEmail());
                         success.setRequiresPasswordChange(true);
                     }
                 }
 
-                if(user.isPasswordChangeRequired()){
-                    logger.info("Password change required for user: "+user.getEmail());
+                if (user.isPasswordChangeRequired()) {
+                    logger.info("Password change required for user: " + user.getEmail());
                     success.setRequiresPasswordChange(true);
                 }
 
@@ -138,13 +130,13 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
         throw e;
     }
 
-    protected int getPasswordExpiresInMonths() {
+    private int getPasswordExpiresInMonths() {
         int result = 0;
         IdentityProvider provider = providerProvisioning.retrieveByOriginIgnoreActiveFlag(OriginKeys.UAA, IdentityZoneHolder.get().getId());
-        if (provider!=null) {
-            UaaIdentityProviderDefinition idpDefinition = ObjectUtils.castInstance(provider.getConfig(),UaaIdentityProviderDefinition.class);
-            if (idpDefinition!=null) {
-                if (null!=idpDefinition.getPasswordPolicy()) {
+        if (provider != null) {
+            UaaIdentityProviderDefinition idpDefinition = ObjectUtils.castInstance(provider.getConfig(), UaaIdentityProviderDefinition.class);
+            if (idpDefinition != null) {
+                if (null != idpDefinition.getPasswordPolicy()) {
                     return idpDefinition.getPasswordPolicy().getExpirePasswordInMonths();
                 }
             }
@@ -152,12 +144,12 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
         return result;
     }
 
-    protected Date getPasswordNewerThan() {
+    private Date getPasswordNewerThan() {
         Date result = null;
         IdentityProvider provider = providerProvisioning.retrieveByOriginIgnoreActiveFlag(OriginKeys.UAA, IdentityZoneHolder.get().getId());
-        if(provider != null) {
-            UaaIdentityProviderDefinition idpDefinition = ObjectUtils.castInstance(provider.getConfig(),UaaIdentityProviderDefinition.class);
-            if(idpDefinition != null && idpDefinition.getPasswordPolicy() != null) {
+        if (provider != null) {
+            UaaIdentityProviderDefinition idpDefinition = ObjectUtils.castInstance(provider.getConfig(), UaaIdentityProviderDefinition.class);
+            if (idpDefinition != null && idpDefinition.getPasswordPolicy() != null) {
                 return idpDefinition.getPasswordPolicy().getPasswordNewerThan();
             }
         }
@@ -167,7 +159,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     private UaaUser getUaaUser(Authentication req) {
         try {
             UaaUser user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US), getOrigin());
-            if (user!=null) {
+            if (user != null) {
                 return user;
             }
         } catch (UsernameNotFoundException ignored) {
@@ -182,7 +174,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     }
 
     @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+    public void setApplicationEventPublisher(final @NonNull ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }
 
@@ -208,7 +200,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
 
     private boolean checkPasswordExpired(Date passwordLastModified) {
         int expiringPassword = getPasswordExpiresInMonths();
-        if (expiringPassword>0) {
+        if (expiringPassword > 0) {
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(passwordLastModified.getTime());
             cal.add(Calendar.MONTH, expiringPassword);
