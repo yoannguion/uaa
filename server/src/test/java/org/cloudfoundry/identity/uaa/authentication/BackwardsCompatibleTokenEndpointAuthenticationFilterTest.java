@@ -1,24 +1,8 @@
-/*
- * ****************************************************************************
- *     Cloud Foundry
- *     Copyright (c) [2009-2017] Pivotal Software, Inc. All Rights Reserved.
- *
- *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
- *     You may not use this product except in compliance with the License.
- *
- *     This product includes a number of subcomponents with
- *     separate copyright notices and license terms. Your use of these
- *     subcomponents is subject to the terms and conditions of the
- *     subcomponent's license, as noted in the LICENSE file.
- * ****************************************************************************
- */
-
 package org.cloudfoundry.identity.uaa.authentication;
 
 import org.cloudfoundry.identity.uaa.oauth.TokenTestSupport;
 import org.cloudfoundry.identity.uaa.provider.oauth.XOAuthAuthenticationManager;
 import org.cloudfoundry.identity.uaa.provider.oauth.XOAuthCodeToken;
-import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,9 +40,7 @@ import static org.mockito.Mockito.when;
 
 public class BackwardsCompatibleTokenEndpointAuthenticationFilterTest {
 
-
     private AuthenticationManager passwordAuthManager;
-    private OAuth2RequestFactory requestFactory;
     private SAMLProcessingFilter samlAuthFilter;
     private XOAuthAuthenticationManager xoAuthAuthenticationManager;
     private BackwardsCompatibleTokenEndpointAuthenticationFilter filter;
@@ -72,17 +54,17 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilterTest {
     public void setUp() {
 
         passwordAuthManager = mock(AuthenticationManager.class);
-        requestFactory = mock(OAuth2RequestFactory.class);
+        OAuth2RequestFactory requestFactory = mock(OAuth2RequestFactory.class);
         samlAuthFilter = mock(SAMLProcessingFilter.class);
         xoAuthAuthenticationManager = mock(XOAuthAuthenticationManager.class);
 
         filter = spy(
-            new BackwardsCompatibleTokenEndpointAuthenticationFilter(
-                passwordAuthManager,
-                requestFactory,
-                samlAuthFilter,
-                xoAuthAuthenticationManager
-            )
+                new BackwardsCompatibleTokenEndpointAuthenticationFilter(
+                        passwordAuthManager,
+                        requestFactory,
+                        samlAuthFilter,
+                        xoAuthAuthenticationManager
+                )
         );
 
         entryPoint = mock(AuthenticationEntryPoint.class);
@@ -96,7 +78,6 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilterTest {
     @After
     public void tearDown() {
         SecurityContextHolder.clearContext();
-        IdentityZoneHolder.clear();
         ofNullable(support).ifPresent(TokenTestSupport::clear);
     }
 
@@ -111,7 +92,6 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilterTest {
         request.addParameter("password", "koala");
         filter.doFilter(request, response, chain);
         verify(entryPoint, times(1)).commence(same(request), same(response), any(PasswordChangeRequiredException.class));
-
     }
 
     @Test
@@ -125,7 +105,6 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilterTest {
         verifyZeroInteractions(samlAuthFilter);
         verifyZeroInteractions(xoAuthAuthenticationManager);
     }
-
 
     @Test
     public void attempt_saml_assertion_authentication() throws Exception {

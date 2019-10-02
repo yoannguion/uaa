@@ -1,23 +1,14 @@
-/*******************************************************************************
- *     Cloud Foundry
- *     Copyright (c) [2009-2016] Pivotal Software, Inc. All Rights Reserved.
- *
- *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
- *     You may not use this product except in compliance with the License.
- *
- *     This product includes a number of subcomponents with
- *     separate copyright notices and license terms. Your use of these
- *     subcomponents is subject to the terms and conditions of the
- *     subcomponent's license, as noted in the LICENSE file.
- *******************************************************************************/
-
 package org.cloudfoundry.identity.uaa.authentication;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.cloudfoundry.identity.uaa.provider.oauth.XOAuthAuthenticationManager;
 import org.cloudfoundry.identity.uaa.provider.oauth.XOAuthCodeToken;
-import org.springframework.security.authentication.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +23,12 @@ import org.springframework.security.saml.SAMLProcessingFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -45,10 +41,9 @@ import static org.cloudfoundry.identity.uaa.oauth.token.TokenConstants.GRANT_TYP
 
 /**
  * Provides an implementation that sets the UserAuthentication
- * prior to createAuthorizatioRequest is called.
+ * prior to createAuthorizationRequest is called.
  * Backwards compatible with Spring Security Oauth2 v1
  * This is a copy of the TokenEndpointAuthenticationFilter from Spring Security Oauth2 v2, but made to work with UAA
- *
  */
 public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Filter {
 
@@ -70,6 +65,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
                                                                 OAuth2RequestFactory oAuth2RequestFactory) {
         this(authenticationManager, oAuth2RequestFactory, null, null);
     }
+
     /**
      * @param authenticationManager an AuthenticationManager for the incoming request
      */
@@ -100,12 +96,12 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
      * @param authenticationDetailsSource the authenticationDetailsSource to set
      */
     public void setAuthenticationDetailsSource(
-        AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
+            AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
         this.authenticationDetailsSource = authenticationDetailsSource;
     }
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException,
-        ServletException {
+            ServletException {
         final HttpServletRequest request = (HttpServletRequest) req;
         final HttpServletResponse response = (HttpServletResponse) res;
 
@@ -116,7 +112,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
                 Authentication clientAuth = SecurityContextHolder.getContext().getAuthentication();
                 if (clientAuth == null) {
                     throw new BadCredentialsException(
-                        "No client authentication found. Remember to put a filter upstream of the TokenEndpointAuthenticationFilter.");
+                            "No client authentication found. Remember to put a filter upstream of the TokenEndpointAuthenticationFilter.");
                 }
 
                 Map<String, String> map = getSingleValueMap(request);
@@ -133,21 +129,19 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
                 OAuth2Request storedOAuth2Request = oAuth2RequestFactory.createOAuth2Request(authorizationRequest);
 
                 SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(new OAuth2Authentication(storedOAuth2Request, userAuthentication));
-
-                onSuccessfulAuthentication(request, response, userAuthentication);
+                        .getContext()
+                        .setAuthentication(new OAuth2Authentication(storedOAuth2Request, userAuthentication));
             }
         } catch (AuthenticationException failed) {
             logger.debug("Authentication request failed: " + failed.getMessage());
-            onUnsuccessfulAuthentication(request, response, failed);
+            onUnsuccessfulAuthentication();
             authenticationEntryPoint.commence(request, response, failed);
             return;
         } catch (OAuth2Exception failed) {
             String message = failed.getMessage();
             logger.debug("Authentication request failed with Oauth exception: " + message);
-            InsufficientAuthenticationException  ex = new InsufficientAuthenticationException (message, failed);
-            onUnsuccessfulAuthentication(request, response, ex);
+            InsufficientAuthenticationException ex = new InsufficientAuthenticationException(message, failed);
+            onUnsuccessfulAuthentication();
             authenticationEntryPoint.commence(request, response, ex);
             return;
         }
@@ -156,7 +150,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
     }
 
     private Map<String, String> getSingleValueMap(HttpServletRequest request) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         Map<String, String[]> parameters = request.getParameterMap();
         for (String key : parameters.keySet()) {
             String[] values = parameters.get(key);
@@ -165,14 +159,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
         return map;
     }
 
-    protected void onSuccessfulAuthentication(HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              Authentication authResult) {
-    }
-
-    protected void onUnsuccessfulAuthentication(HttpServletRequest request,
-                                                HttpServletResponse response,
-                                                AuthenticationException failed) {
+    private void onUnsuccessfulAuthentication() {
         SecurityContextHolder.clearContext();
     }
 
@@ -194,7 +181,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
 
     protected Authentication attemptTokenAuthentication(HttpServletRequest request, HttpServletResponse response) {
         String grantType = request.getParameter("grant_type");
-        logger.debug("Processing token user authentication for grant:"+grantType);
+        logger.debug("Processing token user authentication for grant:" + grantType);
         Authentication authResult = null;
         if (GRANT_TYPE_PASSWORD.equals(grantType)) {
             Authentication credentials = extractCredentials(request);
@@ -210,7 +197,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
 
             return authResult;
         } else if (GRANT_TYPE_SAML2_BEARER.equals(grantType)) {
-            logger.debug(GRANT_TYPE_SAML2_BEARER +" found. Attempting authentication with assertion");
+            logger.debug(GRANT_TYPE_SAML2_BEARER + " found. Attempting authentication with assertion");
             String assertion = request.getParameter("assertion");
             if (assertion != null && samlAuthenticationFilter != null) {
                 logger.debug("Attempting SAML authentication for token endpoint.");
@@ -220,7 +207,7 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
                 throw new InsufficientAuthenticationException("SAML Assertion is missing");
             }
         } else if (GRANT_TYPE_JWT_BEARER.equals(grantType)) {
-            logger.debug(GRANT_TYPE_JWT_BEARER +" found. Attempting authentication with assertion");
+            logger.debug(GRANT_TYPE_JWT_BEARER + " found. Attempting authentication with assertion");
             String assertion = request.getParameter("assertion");
             if (assertion != null && xoAuthAuthenticationManager != null) {
                 logger.debug("Attempting OIDC JWT authentication for token endpoint.");
@@ -237,14 +224,6 @@ public class BackwardsCompatibleTokenEndpointAuthenticationFilter implements Fil
             return authResult;
         }
         return null;
-    }
-
-    @Override
-    public void init(FilterConfig filterConfig) {
-    }
-
-    @Override
-    public void destroy() {
     }
 
     private String getContextPath(HttpServletRequest request) {
