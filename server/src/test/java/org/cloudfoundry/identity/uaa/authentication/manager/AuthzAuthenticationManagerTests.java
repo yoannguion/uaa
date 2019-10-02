@@ -22,7 +22,7 @@ import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.user.UaaUserDatabase;
 import org.cloudfoundry.identity.uaa.user.UaaUserPrototype;
 import org.cloudfoundry.identity.uaa.util.beans.PasswordEncoderConfig;
-import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
+import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,11 +72,18 @@ class AuthzAuthenticationManagerTests {
     private UaaUser uaaUser;
     private PasswordEncoder passwordEncoder;
     private IdentityProviderProvisioning identityProviderProvisioning;
+    private String currentZoneId;
 
     private ArgumentCaptor<ApplicationEvent> eventCaptor;
 
     @BeforeEach
     void setUp() {
+        RandomValueStringGenerator generator = new RandomValueStringGenerator();
+        currentZoneId = "currentZoneId-" + generator.generate();
+
+        IdentityZoneManager mockIdentityZoneManager = mock(IdentityZoneManager.class);
+        when(mockIdentityZoneManager.getCurrentIdentityZoneId()).thenReturn(currentZoneId);
+
         passwordEncoder = new PasswordEncoderConfig().nonCachingPasswordEncoder();
         uaaUser = new UaaUser(getPrototype());
         identityProviderProvisioning = mock(IdentityProviderProvisioning.class);
@@ -88,7 +95,7 @@ class AuthzAuthenticationManagerTests {
         AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
         when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);
 
-        authzAuthenticationManager = new AuthzAuthenticationManager(mockUaaUserDatabase, passwordEncoder, identityProviderProvisioning);
+        authzAuthenticationManager = new AuthzAuthenticationManager(mockUaaUserDatabase, passwordEncoder, identityProviderProvisioning, mockIdentityZoneManager);
         authzAuthenticationManager.setApplicationEventPublisher(mockApplicationEventPublisher);
         authzAuthenticationManager.setOrigin(OriginKeys.UAA);
         authzAuthenticationManager.setAccountLoginPolicy(mockAccountLoginPolicy);
@@ -105,7 +112,7 @@ class AuthzAuthenticationManagerTests {
                 .withGivenName("A")
                 .withFamilyName("User")
                 .withOrigin(OriginKeys.UAA)
-                .withZoneId(IdentityZoneHolder.get().getId())
+                .withZoneId(currentZoneId)
                 .withExternalId(id)
                 .withPasswordLastModified(new Date(System.currentTimeMillis()))
                 .withVerified(true);
@@ -150,7 +157,7 @@ class AuthzAuthenticationManagerTests {
                 OriginKeys.UAA,
                 null,
                 true,
-                IdentityZoneHolder.get().getId(),
+                currentZoneId,
                 uaaUser.getSalt(),
                 oneYearAgo);
         when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
