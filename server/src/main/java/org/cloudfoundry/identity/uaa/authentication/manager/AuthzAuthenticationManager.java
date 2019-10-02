@@ -19,6 +19,8 @@ import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.user.UaaUserDatabase;
 import org.cloudfoundry.identity.uaa.util.ObjectUtils;
 import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -43,22 +45,24 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     private final PasswordEncoder encoder;
     private final UaaUserDatabase userDatabase;
     private final IdentityZoneManager identityZoneManager;
+    private final AccountLoginPolicy accountLoginPolicy;
+    private final IdentityProviderProvisioning providerProvisioning;
+    private final boolean allowUnverifiedUsers;
     private ApplicationEventPublisher eventPublisher;
-    private AccountLoginPolicy accountLoginPolicy;
-    private IdentityProviderProvisioning providerProvisioning;
-
-    private String origin;
-    private boolean allowUnverifiedUsers = true;
 
     public AuthzAuthenticationManager(
             final UaaUserDatabase userDatabase,
-            final PasswordEncoder encoder,
+            final @Qualifier("nonCachingPasswordEncoder") PasswordEncoder encoder,
             final IdentityProviderProvisioning providerProvisioning,
-            final IdentityZoneManager identityZoneManager) {
+            final IdentityZoneManager identityZoneManager,
+            final AccountLoginPolicy accountLoginPolicy,
+            final @Value("${allowUnverifiedUsers:true}") boolean allowUnverifiedUsers) {
         this.userDatabase = userDatabase;
         this.encoder = encoder;
         this.providerProvisioning = providerProvisioning;
         this.identityZoneManager = identityZoneManager;
+        this.accountLoginPolicy = accountLoginPolicy;
+        this.allowUnverifiedUsers = allowUnverifiedUsers;
     }
 
     @Override
@@ -74,7 +78,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
         UaaUser user = getUaaUser(req);
 
         if (user == null) {
-            logger.debug("No user named '" + req.getName() + "' was found for origin:" + origin);
+            logger.debug("No user named '" + req.getName() + "' was found for origin:" + OriginKeys.UAA);
             publish(new UserNotFoundEvent(req, identityZoneManager.getCurrentIdentityZoneId()));
         } else {
             if (!accountLoginPolicy.isAllowed(user, req)) {
@@ -161,7 +165,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
 
     private UaaUser getUaaUser(Authentication req) {
         try {
-            UaaUser user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US), getOrigin());
+            UaaUser user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US), OriginKeys.UAA);
             if (user != null) {
                 return user;
             }
@@ -179,26 +183,6 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     @Override
     public void setApplicationEventPublisher(final @NonNull ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
-    }
-
-    public AccountLoginPolicy getAccountLoginPolicy() {
-        return this.accountLoginPolicy;
-    }
-
-    public void setAccountLoginPolicy(AccountLoginPolicy accountLoginPolicy) {
-        this.accountLoginPolicy = accountLoginPolicy;
-    }
-
-    public String getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
-
-    public void setAllowUnverifiedUsers(boolean allowUnverifiedUsers) {
-        this.allowUnverifiedUsers = allowUnverifiedUsers;
     }
 
     private boolean checkPasswordExpired(Date passwordLastModified) {

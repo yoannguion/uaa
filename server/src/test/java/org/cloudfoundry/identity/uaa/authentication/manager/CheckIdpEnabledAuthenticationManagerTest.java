@@ -49,11 +49,9 @@ public class CheckIdpEnabledAuthenticationManagerTest extends JdbcTestBase {
         MockUaaUserDatabase userDatabase = new MockUaaUserDatabase(u -> u.withId("id").withUsername("marissa").withEmail("test@test.org").withVerified(true).withPassword("koala"));
         PasswordEncoder encoder = mock(PasswordEncoder.class);
         when(encoder.matches(anyString(),anyString())).thenReturn(true);
-        AuthzAuthenticationManager authzAuthenticationManager = new AuthzAuthenticationManager(userDatabase, encoder, identityProviderProvisioning, new IdentityZoneManagerImpl());
-        authzAuthenticationManager.setOrigin(OriginKeys.UAA);
         AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
+        AuthzAuthenticationManager authzAuthenticationManager = new AuthzAuthenticationManager(userDatabase, encoder, identityProviderProvisioning, new IdentityZoneManagerImpl(), mockAccountLoginPolicy, true);
         when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);
-        authzAuthenticationManager.setAccountLoginPolicy(mockAccountLoginPolicy);
 
         manager = new CheckIdpEnabledAuthenticationManager(authzAuthenticationManager, OriginKeys.UAA, identityProviderProvisioning);
         token = new UsernamePasswordAuthenticationToken("marissa", "koala");

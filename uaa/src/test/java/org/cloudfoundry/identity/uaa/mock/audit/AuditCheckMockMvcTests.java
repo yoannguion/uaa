@@ -54,6 +54,7 @@ import org.springframework.security.oauth2.common.util.RandomValueStringGenerato
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -87,6 +88,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.util.Base64Utils.encode;
 
 @DefaultTestContext
+@TestPropertySource(value = {
+        "allowUnverifiedUsers=false"
+})
 class AuditCheckMockMvcTests {
 
     @Autowired
@@ -112,8 +116,6 @@ class AuditCheckMockMvcTests {
     @Autowired
     private IdentityZoneManager identityZoneManager;
 
-    @Value("${allowUnverifiedUsers:true}")
-    private boolean allowUnverifiedUsers;
     @Autowired
     private LoggingAuditService loggingAuditService;
     private InterceptingLogger testLogger;
@@ -155,8 +157,6 @@ class AuditCheckMockMvcTests {
         authSuccessListener = mock(new DefaultApplicationListener<UserAuthenticationSuccessEvent>() {
         }.getClass());
         configurableApplicationContext.addApplicationListener(authSuccessListener);
-
-        mgr.setAllowUnverifiedUsers(false);
     }
 
     @AfterEach
@@ -166,7 +166,6 @@ class AuditCheckMockMvcTests {
         MockMvcUtils.removeEventListener(webApplicationContext, authSuccessListener);
         MockMvcUtils.removeEventListener(webApplicationContext, auditListener);
         SecurityContextHolder.clearContext();
-        mgr.setAllowUnverifiedUsers(allowUnverifiedUsers);
     }
 
     @AfterEach
@@ -317,8 +316,6 @@ class AuditCheckMockMvcTests {
     void unverifiedLegacyUserAuthenticationWhenAllowedTest(
             @Autowired List<JdbcTemplate> jdbcTemplates
     ) throws Exception {
-        mgr.setAllowUnverifiedUsers(true);
-
         String adminToken = testClient.getClientCredentialsOAuthAccessToken(
                 testAccounts.getAdminClientId(),
                 testAccounts.getAdminClientSecret(),
@@ -351,8 +348,6 @@ class AuditCheckMockMvcTests {
 
     @Test
     void unverifiedPostLegacyUserAuthenticationWhenAllowedTest() throws Exception {
-        mgr.setAllowUnverifiedUsers(true);
-
         String adminToken = testClient.getClientCredentialsOAuthAccessToken(
                 testAccounts.getAdminClientId(),
                 testAccounts.getAdminClientSecret(),

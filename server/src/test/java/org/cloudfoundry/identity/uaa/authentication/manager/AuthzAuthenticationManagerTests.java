@@ -24,6 +24,7 @@ import org.cloudfoundry.identity.uaa.user.UaaUserPrototype;
 import org.cloudfoundry.identity.uaa.util.beans.PasswordEncoderConfig;
 import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -75,13 +76,15 @@ class AuthzAuthenticationManagerTests {
     private String currentZoneId;
 
     private ArgumentCaptor<ApplicationEvent> eventCaptor;
+    private AccountLoginPolicy mockAccountLoginPolicy;
+    private IdentityZoneManager mockIdentityZoneManager;
 
     @BeforeEach
     void setUp() {
         RandomValueStringGenerator generator = new RandomValueStringGenerator();
         currentZoneId = "currentZoneId-" + generator.generate();
 
-        IdentityZoneManager mockIdentityZoneManager = mock(IdentityZoneManager.class);
+        mockIdentityZoneManager = mock(IdentityZoneManager.class);
         when(mockIdentityZoneManager.getCurrentIdentityZoneId()).thenReturn(currentZoneId);
 
         passwordEncoder = new PasswordEncoderConfig().nonCachingPasswordEncoder();
@@ -92,13 +95,11 @@ class AuthzAuthenticationManagerTests {
         mockApplicationEventPublisher = mock(ApplicationEventPublisher.class);
         eventCaptor = ArgumentCaptor.forClass(ApplicationEvent.class);
         doNothing().when(mockApplicationEventPublisher).publishEvent(eventCaptor.capture());
-        AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
+        mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
         when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);
 
-        authzAuthenticationManager = new AuthzAuthenticationManager(mockUaaUserDatabase, passwordEncoder, identityProviderProvisioning, mockIdentityZoneManager);
+        authzAuthenticationManager = new AuthzAuthenticationManager(mockUaaUserDatabase, passwordEncoder, identityProviderProvisioning, mockIdentityZoneManager, mockAccountLoginPolicy, true);
         authzAuthenticationManager.setApplicationEventPublisher(mockApplicationEventPublisher);
-        authzAuthenticationManager.setOrigin(OriginKeys.UAA);
-        authzAuthenticationManager.setAccountLoginPolicy(mockAccountLoginPolicy);
     }
 
     private UaaUserPrototype getPrototype() {
@@ -205,9 +206,7 @@ class AuthzAuthenticationManagerTests {
     @Test
     void authenticationIsDeniedIfRejectedByLoginPolicy() {
         when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
-        AccountLoginPolicy lp = mock(AccountLoginPolicy.class);
-        when(lp.isAllowed(any(UaaUser.class), any(Authentication.class))).thenReturn(false);
-        authzAuthenticationManager.setAccountLoginPolicy(lp);
+        when(mockAccountLoginPolicy.isAllowed(any(UaaUser.class), any(Authentication.class))).thenReturn(false);
         assertThrows(AuthenticationPolicyRejectionException.class, () -> authzAuthenticationManager.authenticate(createAuthRequest("auser", "password")));
         verify(mockUaaUserDatabase, times(0)).updateLastLogonTime(anyString());
     }
@@ -220,17 +219,6 @@ class AuthzAuthenticationManagerTests {
     }
 
     @Test
-    void successfulVerifyOriginAuthentication1() {
-        authzAuthenticationManager.setOrigin("test");
-        uaaUser = uaaUser.modifySource("test", null);
-        when(mockUaaUserDatabase.retrieveUserByName("auser", "test")).thenReturn(uaaUser);
-        Authentication result = authzAuthenticationManager.authenticate(createAuthRequest("auser", "password"));
-        assertNotNull(result);
-        assertEquals("auser", result.getName());
-        assertEquals("auser", ((UaaPrincipal) result.getPrincipal()).getName());
-    }
-
-    @Test
     void originAuthenticationFail() {
         when(mockUaaUserDatabase.retrieveUserByName("auser", "not UAA")).thenReturn(uaaUser);
         assertThrows(BadCredentialsException.class, () -> authzAuthenticationManager.authenticate(createAuthRequest("auser", "password")));
@@ -238,7 +226,6 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void unverifiedAuthenticationForOldUserSucceedsWhenAllowed() {
-        authzAuthenticationManager.setAllowUnverifiedUsers(true);
         uaaUser = new UaaUser(getPrototype().withLegacyVerificationBehavior(true));
         uaaUser.setVerified(false);
         when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
@@ -249,30 +236,37 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void unverifiedAuthenticationForNewUserFailsEvenWhenAllowed() {
-        authzAuthenticationManager.setAllowUnverifiedUsers(true);
         uaaUser.setVerified(false);
         when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
         assertThrows(AccountNotVerifiedException.class, () -> authzAuthenticationManager.authenticate(createAuthRequest("auser", "password")));
         verify(mockApplicationEventPublisher).publishEvent(isA(UnverifiedUserAuthenticationEvent.class));
     }
 
-    @Test
-    void authenticationWhenUserPasswordChangeRequired() {
-        authzAuthenticationManager.setAllowUnverifiedUsers(false);
-        uaaUser.setPasswordChangeRequired(true);
-        when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
-        Authentication authentication = authzAuthenticationManager.authenticate(createAuthRequest("auser", "password"));
-        assertTrue(((UaaAuthentication) authentication).isRequiresPasswordChange());
-        assertTrue(authentication.isAuthenticated());
-    }
+    @Nested
+    @ExtendWith(PollutionPreventionExtension.class)
+    class WithAllowUnverifiedUsersFalse {
+        @BeforeEach
+        void setUp() {
+            authzAuthenticationManager = new AuthzAuthenticationManager(mockUaaUserDatabase, passwordEncoder, identityProviderProvisioning, mockIdentityZoneManager, mockAccountLoginPolicy, false);
+            authzAuthenticationManager.setApplicationEventPublisher(mockApplicationEventPublisher);
+        }
 
-    @Test
-    void unverifiedAuthenticationFailsWhenNotAllowed() {
-        authzAuthenticationManager.setAllowUnverifiedUsers(false);
-        uaaUser.setVerified(false);
-        when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
-        assertThrows(AccountNotVerifiedException.class, () -> authzAuthenticationManager.authenticate(createAuthRequest("auser", "password")));
-        verify(mockApplicationEventPublisher).publishEvent(isA(UnverifiedUserAuthenticationEvent.class));
+        @Test
+        void authenticationWhenUserPasswordChangeRequired() {
+            uaaUser.setPasswordChangeRequired(true);
+            when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
+            Authentication authentication = authzAuthenticationManager.authenticate(createAuthRequest("auser", "password"));
+            assertTrue(((UaaAuthentication) authentication).isRequiresPasswordChange());
+            assertTrue(authentication.isAuthenticated());
+        }
+
+        @Test
+        void unverifiedAuthenticationFailsWhenNotAllowed() {
+            uaaUser.setVerified(false);
+            when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
+            assertThrows(AccountNotVerifiedException.class, () -> authzAuthenticationManager.authenticate(createAuthRequest("auser", "password")));
+            verify(mockApplicationEventPublisher).publishEvent(isA(UnverifiedUserAuthenticationEvent.class));
+        }
     }
 
     @Test
@@ -306,11 +300,9 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void userIsLockedOutAfterNumberOfUnsuccessfulTriesIsExceeded() {
-        AccountLoginPolicy lockoutPolicy = mock(PeriodLockoutPolicy.class);
-        authzAuthenticationManager.setAccountLoginPolicy(lockoutPolicy);
         when(mockUaaUserDatabase.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(uaaUser);
         Authentication authentication = createAuthRequest("auser", "password");
-        when(lockoutPolicy.isAllowed(any(UaaUser.class), eq(authentication))).thenReturn(false);
+        when(mockAccountLoginPolicy.isAllowed(any(UaaUser.class), eq(authentication))).thenReturn(false);
 
         assertThrows(AuthenticationPolicyRejectionException.class, () -> authzAuthenticationManager.authenticate(authentication));
 
