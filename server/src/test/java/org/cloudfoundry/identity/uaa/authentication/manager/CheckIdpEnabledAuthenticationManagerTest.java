@@ -1,75 +1,65 @@
-/*
- * ******************************************************************************
- *      Cloud Foundry
- *      Copyright (c) [2009-2016] Pivotal Software, Inc. All Rights Reserved.
- *
- *      This product is licensed to you under the Apache License, Version 2.0 (the "License").
- *      You may not use this product except in compliance with the License.
- *
- *      This product includes a number of subcomponents with
- *      separate copyright notices and license terms. Your use of these
- *      subcomponents is subject to the terms and conditions of the
- *      subcomponent's license, as noted in the LICENSE file.
- * ******************************************************************************
- */
 package org.cloudfoundry.identity.uaa.authentication.manager;
-
 
 import org.cloudfoundry.identity.uaa.constants.OriginKeys;
 import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
-import org.cloudfoundry.identity.uaa.provider.IdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.provider.JdbcIdentityProviderProvisioning;
-import org.cloudfoundry.identity.uaa.test.JdbcTestBase;
-import org.cloudfoundry.identity.uaa.user.MockUaaUserDatabase;
-import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
-import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManagerImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.cloudfoundry.identity.uaa.security.PollutionPreventionExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderNotFoundException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CheckIdpEnabledAuthenticationManagerTest extends JdbcTestBase {
+@ExtendWith(MockitoExtension.class)
+@ExtendWith(PollutionPreventionExtension.class)
+class CheckIdpEnabledAuthenticationManagerTest {
 
-    private IdentityProviderProvisioning identityProviderProvisioning;
-    private CheckIdpEnabledAuthenticationManager manager;
-    private UsernamePasswordAuthenticationToken token;
+    private CheckIdpEnabledAuthenticationManager checkIdpEnabledAuthenticationManager;
 
-    @Before
-    public void setupAuthManager() {
-        identityProviderProvisioning = new JdbcIdentityProviderProvisioning(jdbcTemplate);
-        MockUaaUserDatabase userDatabase = new MockUaaUserDatabase(u -> u.withId("id").withUsername("marissa").withEmail("test@test.org").withVerified(true).withPassword("koala"));
-        PasswordEncoder encoder = mock(PasswordEncoder.class);
-        when(encoder.matches(anyString(),anyString())).thenReturn(true);
-        AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
-        AuthzAuthenticationManager authzAuthenticationManager = new AuthzAuthenticationManager(userDatabase, encoder, identityProviderProvisioning, new IdentityZoneManagerImpl(), mockAccountLoginPolicy, true);
-        when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);
+    @Mock
+    private AuthenticationManager mockAuthenticationManager;
 
-        manager = new CheckIdpEnabledAuthenticationManager(authzAuthenticationManager, OriginKeys.UAA, identityProviderProvisioning);
-        token = new UsernamePasswordAuthenticationToken("marissa", "koala");
+    @Mock
+    private JdbcIdentityProviderProvisioning mockJdbcIdentityProviderProvisioning;
+
+    @Mock
+    private Authentication mockInputAuthentication;
+
+    @Mock
+    private IdentityProvider mockIdentityProvider;
+
+    @BeforeEach
+    void setUp() {
+        checkIdpEnabledAuthenticationManager = new CheckIdpEnabledAuthenticationManager(mockAuthenticationManager, OriginKeys.UAA, mockJdbcIdentityProviderProvisioning);
+        when(mockJdbcIdentityProviderProvisioning.retrieveByOriginIgnoreActiveFlag(anyString(), anyString())).thenReturn(mockIdentityProvider);
     }
 
     @Test
-    public void testAuthenticate() {
-        Authentication auth = manager.authenticate(token);
-        assertNotNull(auth);
-        assertTrue(auth.isAuthenticated());
+    void withActiveIdp() {
+        Authentication mockOutputAuthentication = mock(Authentication.class);
+        when(mockIdentityProvider.isActive()).thenReturn(true);
+        when(mockAuthenticationManager.authenticate(any(Authentication.class))).thenReturn(mockOutputAuthentication);
+        Authentication actual = checkIdpEnabledAuthenticationManager.authenticate(mockInputAuthentication);
+        assertThat(actual, equalTo(mockOutputAuthentication));
+        verify(mockAuthenticationManager).authenticate(mockInputAuthentication);
     }
 
-    @Test(expected = ProviderNotFoundException.class)
-    public void testAuthenticateIdpDisabled() {
-        IdentityProvider provider = identityProviderProvisioning.retrieveByOrigin(OriginKeys.UAA, IdentityZoneHolder.get().getId());
-        provider.setActive(false);
-        identityProviderProvisioning.update(provider, IdentityZoneHolder.get().getId());
-        manager.authenticate(token);
+    @Test
+    void withInactiveIdp() {
+        when(mockIdentityProvider.isActive()).thenReturn(false);
+        assertThrows(ProviderNotFoundException.class,
+                () -> checkIdpEnabledAuthenticationManager.authenticate(mockInputAuthentication));
     }
-
 }
