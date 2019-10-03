@@ -722,11 +722,7 @@
           class="org.cloudfoundry.identity.uaa.authentication.manager.AuthzAuthenticationManager" />
 
     <bean id="uaaAuthenticationMgr"
-          class="org.cloudfoundry.identity.uaa.authentication.manager.CheckIdpEnabledAuthenticationManager">
-        <constructor-arg name="delegate" ref="uaaUserDatabaseAuthenticationManager"/>
-        <constructor-arg name="origin" value="uaa"/>
-        <constructor-arg name="identityProviderProvisioning" ref="identityProviderProvisioning"/>
-    </bean>
+          class="org.cloudfoundry.identity.uaa.authentication.manager.CheckIdpEnabledAuthenticationManager" />
 
     <bean id="zoneAwareAuthzAuthenticationManager"
           class="org.cloudfoundry.identity.uaa.authentication.manager.DynamicZoneAwareAuthenticationManager"

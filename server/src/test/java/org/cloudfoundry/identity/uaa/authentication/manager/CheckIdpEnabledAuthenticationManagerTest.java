@@ -4,14 +4,17 @@ import org.cloudfoundry.identity.uaa.constants.OriginKeys;
 import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
 import org.cloudfoundry.identity.uaa.provider.JdbcIdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.security.PollutionPreventionExtension;
+import org.cloudfoundry.identity.uaa.zone.beans.IdentityZoneManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -26,6 +29,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(PollutionPreventionExtension.class)
 class CheckIdpEnabledAuthenticationManagerTest {
 
+    @InjectMocks
     private CheckIdpEnabledAuthenticationManager checkIdpEnabledAuthenticationManager;
 
     @Mock
@@ -40,10 +44,15 @@ class CheckIdpEnabledAuthenticationManagerTest {
     @Mock
     private IdentityProvider mockIdentityProvider;
 
+    @Mock
+    private IdentityZoneManager mockIdentityZoneManager;
+
     @BeforeEach
     void setUp() {
-        checkIdpEnabledAuthenticationManager = new CheckIdpEnabledAuthenticationManager(mockAuthenticationManager, OriginKeys.UAA, mockJdbcIdentityProviderProvisioning);
-        when(mockJdbcIdentityProviderProvisioning.retrieveByOriginIgnoreActiveFlag(anyString(), anyString())).thenReturn(mockIdentityProvider);
+        RandomValueStringGenerator generator = new RandomValueStringGenerator();
+        String currentZoneId = "currentZoneId-" + generator.generate();
+        when(mockIdentityZoneManager.getCurrentIdentityZoneId()).thenReturn(currentZoneId);
+        when(mockJdbcIdentityProviderProvisioning.retrieveByOriginIgnoreActiveFlag(OriginKeys.UAA, currentZoneId)).thenReturn(mockIdentityProvider);
     }
 
     @Test
