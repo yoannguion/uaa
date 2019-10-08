@@ -20,6 +20,7 @@ import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
 import org.cloudfoundry.identity.uaa.provider.IdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.provider.LockoutPolicy;
 import org.cloudfoundry.identity.uaa.provider.UaaIdentityProviderDefinition;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.util.TimeService;
 import org.cloudfoundry.identity.uaa.util.TimeServiceImpl;
@@ -49,7 +50,7 @@ public class PeriodLockoutPolicyTests {
     private static final int ONE_HOUR = 60 * 60;
 
     private UaaAuditService as;
-    private UaaUser joe;
+    private ScimUser joe;
     private long now;
     private PeriodLockoutPolicy policy;
     private CommonLoginPolicy innerPolicy;
@@ -62,7 +63,7 @@ public class PeriodLockoutPolicyTests {
     public void setUp() {
         now = System.currentTimeMillis();
         as = mock(UaaAuditService.class);
-        joe = mock(UaaUser.class);
+        joe = mock(ScimUser.class);
         TimeService timeService = new TimeServiceImpl();
         when(joe.getId()).thenReturn("1");
         providerProvisioning = mock(IdentityProviderProvisioning.class);

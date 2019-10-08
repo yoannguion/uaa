@@ -12,7 +12,7 @@
  *******************************************************************************/
 package org.cloudfoundry.identity.uaa.authentication.manager;
 
-import org.cloudfoundry.identity.uaa.user.UaaUser;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -22,5 +22,5 @@ import org.springframework.security.core.Authentication;
  */
 public interface AccountLoginPolicy {
 
-    boolean isAllowed(UaaUser user, Authentication a);
+    boolean isAllowed(ScimUser user, Authentication a);
 }

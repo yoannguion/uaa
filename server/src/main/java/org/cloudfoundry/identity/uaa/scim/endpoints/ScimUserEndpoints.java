@@ -184,6 +184,7 @@ public class ScimUserEndpoints implements InitializingBean, ApplicationEventPubl
         }
         scimUser = syncApprovals(syncGroups(scimUser));
         addETagHeader(response, scimUser);
+        scimUser.setPassword(null);
         return scimUser;
     }
 

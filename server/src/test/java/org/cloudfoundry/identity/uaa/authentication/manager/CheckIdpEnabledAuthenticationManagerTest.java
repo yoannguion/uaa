@@ -19,8 +19,9 @@ import org.cloudfoundry.identity.uaa.constants.OriginKeys;
 import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
 import org.cloudfoundry.identity.uaa.provider.IdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.provider.JdbcIdentityProviderProvisioning;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
+import org.cloudfoundry.identity.uaa.scim.ScimUserProvisioning;
 import org.cloudfoundry.identity.uaa.test.JdbcTestBase;
-import org.cloudfoundry.identity.uaa.user.MockUaaUserDatabase;
 import org.cloudfoundry.identity.uaa.zone.IdentityZoneHolder;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,10 +46,17 @@ public class CheckIdpEnabledAuthenticationManagerTest extends JdbcTestBase {
     @Before
     public void setupAuthManager() {
         identityProviderProvisioning = new JdbcIdentityProviderProvisioning(jdbcTemplate);
-        MockUaaUserDatabase userDatabase = new MockUaaUserDatabase(u -> u.withId("id").withUsername("marissa").withEmail("test@test.org").withVerified(true).withPassword("koala"));
+        ScimUserProvisioning mockScimUserProvisioning = mock(ScimUserProvisioning.class);
+
+        ScimUser user = new ScimUser("id", "marissa", "marissa", "marissasLastName");
+        user.setPrimaryEmail("test@test.org");
+        user.setVerified(true);
+        user.setPassword("koala");
+
+        when(mockScimUserProvisioning.retrieveByUsername("marissa", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
         when(encoder.matches(anyString(),anyString())).thenReturn(true);
-        AuthzAuthenticationManager authzAuthenticationManager = new AuthzAuthenticationManager(userDatabase, encoder, identityProviderProvisioning);
+        AuthzAuthenticationManager authzAuthenticationManager = new AuthzAuthenticationManager(mockScimUserProvisioning, encoder, identityProviderProvisioning);
         authzAuthenticationManager.setOrigin(OriginKeys.UAA);
         AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
         when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);

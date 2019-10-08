@@ -17,6 +17,7 @@ import java.security.Principal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
 
 /**
@@ -39,6 +40,17 @@ public class UaaPrincipal implements Principal, Serializable {
             user.getId(),
             user.getUsername(),
             user.getEmail(),
+            user.getOrigin(),
+            user.getExternalId(),
+            user.getZoneId()
+        );
+    }
+
+    public UaaPrincipal(ScimUser user) {
+        this(
+            user.getId(),
+            user.getUserName(),
+            user.getPrimaryEmail(),
             user.getOrigin(),
             user.getExternalId(),
             user.getZoneId()

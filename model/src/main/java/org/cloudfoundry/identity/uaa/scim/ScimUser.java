@@ -17,12 +17,23 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
+import lombok.Setter;
 import org.cloudfoundry.identity.uaa.approval.Approval;
 import org.cloudfoundry.identity.uaa.impl.JsonDateSerializer;
 import org.cloudfoundry.identity.uaa.scim.impl.ScimUserJsonDeserializer;
+import org.cloudfoundry.identity.uaa.user.UaaUser;
+import org.cloudfoundry.identity.uaa.user.UaaUserPrototype;
+import org.cloudfoundry.identity.uaa.user.UaaUserWithoutAuthorities;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.StringUtils.hasText;
@@ -350,6 +361,10 @@ public class ScimUser extends ScimCore<ScimUser> {
 
     private Long lastLogonTime = null;
 
+    @JsonIgnore @Getter @Setter private boolean legacyVerificationBehavior = false;
+
+    @JsonIgnore @Getter @Setter private boolean passwordChangeRequired = false;
+
     @JsonProperty
     private String password;
 
@@ -458,6 +473,31 @@ public class ScimUser extends ScimCore<ScimUser> {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @JsonIgnore
+    public UaaUser getUaaUserWithoutAuthorities() {
+        UaaUserPrototype userPrototype = new UaaUserPrototype()
+                .withId(getId())
+                .withUsername(getUserName())
+                .withPassword(getPassword())
+                .withEmail(getPrimaryEmail())
+                .withGivenName(getGivenName())
+                .withFamilyName(getFamilyName())
+                .withCreated(getMeta().getCreated())
+                .withModified(getMeta().getLastModified())
+                .withOrigin(getOrigin())
+                .withExternalId(getExternalId())
+                .withVerified(isVerified())
+                .withZoneId(getZoneId())
+                .withSalt(getSalt())
+                .withPasswordLastModified(getPasswordLastModified())
+                .withLegacyVerificationBehavior(isLegacyVerificationBehavior())
+                .withLastLogonSuccess(getLastLogonTime())
+                .withPreviousLogonSuccess(getPreviousLogonTime())
+                .withPasswordChangeRequired(isPasswordChangeRequired());
+
+        return new UaaUserWithoutAuthorities(userPrototype);
     }
 
     public String getUserType() {

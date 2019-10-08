@@ -16,6 +16,8 @@ import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
 import org.cloudfoundry.identity.uaa.provider.IdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.provider.PasswordPolicy;
 import org.cloudfoundry.identity.uaa.provider.UaaIdentityProviderDefinition;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
+import org.cloudfoundry.identity.uaa.scim.ScimUserProvisioning;
 import org.cloudfoundry.identity.uaa.security.PollutionPreventionExtension;
 import org.cloudfoundry.identity.uaa.user.UaaAuthority;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
@@ -37,7 +39,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
+import javax.lang.model.util.Elements;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,9 +70,10 @@ import static org.mockito.Mockito.when;
 class AuthzAuthenticationManagerTests {
     private AuthzAuthenticationManager mgr;
     private UaaUserDatabase db;
+    private ScimUserProvisioning mockScimUserProvisioning;
     private ApplicationEventPublisher publisher;
     private static final String PASSWORD = "password";
-    private UaaUser user = null;
+    private ScimUser user = null;
     private PasswordEncoder encoder = new PasswordEncoderConfig().nonCachingPasswordEncoder();
     private String loginServerUserName = "loginServerUser".toLowerCase();
     private IdentityProviderProvisioning providerProvisioning;
@@ -77,9 +82,10 @@ class AuthzAuthenticationManagerTests {
 
     @BeforeEach
     void setUp() {
-        user = new UaaUser(getPrototype());
+        user = createUser();
         providerProvisioning = mock(IdentityProviderProvisioning.class);
         db = mock(UaaUserDatabase.class);
+        mockScimUserProvisioning = mock(ScimUserProvisioning.class);
 
         publisher = mock(ApplicationEventPublisher.class);
         eventCaptor = ArgumentCaptor.forClass(ApplicationEvent.class);
@@ -87,7 +93,7 @@ class AuthzAuthenticationManagerTests {
         AccountLoginPolicy mockAccountLoginPolicy = mock(AccountLoginPolicy.class);
         when(mockAccountLoginPolicy.isAllowed(any(), any())).thenReturn(true);
 
-        mgr = new AuthzAuthenticationManager(db, encoder, providerProvisioning);
+        mgr = new AuthzAuthenticationManager(mockScimUserProvisioning, encoder, providerProvisioning);
         mgr.setApplicationEventPublisher(publisher);
         mgr.setOrigin(OriginKeys.UAA);
         mgr.setAccountLoginPolicy(mockAccountLoginPolicy);
@@ -98,26 +104,29 @@ class AuthzAuthenticationManagerTests {
         IdentityZoneHolder.get().getConfig().getMfaConfig().setEnabled(false);
     }
 
-    private UaaUserPrototype getPrototype() {
+    private ScimUser createUser() {
         String id = new RandomValueStringGenerator().generate();
-        return new UaaUserPrototype()
-                .withId(id)
-                .withUsername("auser")
-                .withPassword(encoder.encode(PASSWORD))
-                .withEmail("auser@blah.com")
-                .withAuthorities(UaaAuthority.USER_AUTHORITIES)
-                .withGivenName("A")
-                .withFamilyName("User")
-                .withOrigin(OriginKeys.UAA)
-                .withZoneId(IdentityZoneHolder.get().getId())
-                .withExternalId(id)
-                .withPasswordLastModified(new Date(System.currentTimeMillis()))
-                .withVerified(true);
+        ScimUser scimUser = new ScimUser(
+                id,
+                "auser",
+                "A",
+                "User"
+        );
+        scimUser.setPassword(encoder.encode(PASSWORD));
+        scimUser.setPrimaryEmail("auser@blah.com");
+        scimUser.setOrigin(OriginKeys.UAA);
+        scimUser.setZoneId(IdentityZoneHolder.get().getId());
+        scimUser.setExternalId(id);
+        scimUser.setPasswordLastModified(new Date(System.currentTimeMillis()));
+        scimUser.setVerified(true);
+
+        return scimUser;
+//                .withAuthorities(UaaAuthority.USER_AUTHORITIES)
     }
 
     @Test
     void successfulAuthentication() {
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication result = mgr.authenticate(createAuthRequest("auser", "password"));
         assertNotNull(result);
         assertEquals("auser", result.getName());
@@ -141,23 +150,9 @@ class AuthzAuthenticationManagerTests {
         Calendar oneYearAgoCal = Calendar.getInstance();
         oneYearAgoCal.add(Calendar.YEAR, -1);
         Date oneYearAgo = new Date(oneYearAgoCal.getTimeInMillis());
-        user = new UaaUser(
-                user.getId(),
-                user.getUsername(),
-                encoder.encode(PASSWORD),
-                user.getPassword(),
-                user.getAuthorities(),
-                user.getGivenName(),
-                user.getFamilyName(),
-                oneYearAgo,
-                oneYearAgo,
-                OriginKeys.UAA,
-                null,
-                true,
-                IdentityZoneHolder.get().getId(),
-                user.getSalt(),
-                oneYearAgo);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+
+        user.setPasswordLastModified(oneYearAgo);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication authentication = mgr.authenticate(createAuthRequest("auser", "password"));
         assertTrue(((UaaAuthentication) authentication).isRequiresPasswordChange());
         assertTrue(authentication.isAuthenticated());
@@ -178,7 +173,7 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void successfulAuthenticationReturnsTokenAndPublishesEvent() {
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication result = mgr.authenticate(createAuthRequest("auser", "password"));
 
         assertNotNull(result);
@@ -190,7 +185,7 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void invalidPasswordPublishesAuthenticationFailureEvent() {
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
 
         assertThrows(BadCredentialsException.class, () -> mgr.authenticate(createAuthRequest("auser", "wrongpassword")));
 
@@ -201,9 +196,9 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void authenticationIsDeniedIfRejectedByLoginPolicy() {
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         AccountLoginPolicy lp = mock(AccountLoginPolicy.class);
-        when(lp.isAllowed(any(UaaUser.class), any(Authentication.class))).thenReturn(false);
+        when(lp.isAllowed(any(ScimUser.class), any(Authentication.class))).thenReturn(false);
         mgr.setAccountLoginPolicy(lp);
         assertThrows(AuthenticationPolicyRejectionException.class, () -> mgr.authenticate(createAuthRequest("auser", "password")));
         verify(db, times(0)).updateLastLogonTime(anyString());
@@ -219,8 +214,9 @@ class AuthzAuthenticationManagerTests {
     @Test
     void successfulVerifyOriginAuthentication1() {
         mgr.setOrigin("test");
-        user = user.modifySource("test", null);
-        when(db.retrieveUserByName("auser", "test")).thenReturn(user);
+        user.setOrigin("test");
+        user.setExternalId(null);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", "test", IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication result = mgr.authenticate(createAuthRequest("auser", "password"));
         assertNotNull(result);
         assertEquals("auser", result.getName());
@@ -229,16 +225,16 @@ class AuthzAuthenticationManagerTests {
 
     @Test
     void originAuthenticationFail() {
-        when(db.retrieveUserByName("auser", "not UAA")).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", "not UAA", IdentityZoneHolder.get().getId())).thenReturn(user);
         assertThrows(BadCredentialsException.class, () -> mgr.authenticate(createAuthRequest("auser", "password")));
     }
 
     @Test
     void unverifiedAuthenticationForOldUserSucceedsWhenAllowed() {
         mgr.setAllowUnverifiedUsers(true);
-        user = new UaaUser(getPrototype().withLegacyVerificationBehavior(true));
+        user.setLegacyVerificationBehavior(true);
         user.setVerified(false);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication result = mgr.authenticate(createAuthRequest("auser", "password"));
         assertEquals("auser", result.getName());
         assertEquals("auser", ((UaaPrincipal) result.getPrincipal()).getName());
@@ -248,7 +244,7 @@ class AuthzAuthenticationManagerTests {
     void unverifiedAuthenticationForNewUserFailsEvenWhenAllowed() {
         mgr.setAllowUnverifiedUsers(true);
         user.setVerified(false);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         assertThrows(AccountNotVerifiedException.class, () -> mgr.authenticate(createAuthRequest("auser", "password")));
         verify(publisher).publishEvent(isA(UnverifiedUserAuthenticationEvent.class));
     }
@@ -257,7 +253,7 @@ class AuthzAuthenticationManagerTests {
     void authenticationWhenUserPasswordChangeRequired() {
         mgr.setAllowUnverifiedUsers(false);
         user.setPasswordChangeRequired(true);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication authentication = mgr.authenticate(createAuthRequest("auser", "password"));
         assertTrue(((UaaAuthentication) authentication).isRequiresPasswordChange());
         assertTrue(authentication.isAuthenticated());
@@ -267,7 +263,7 @@ class AuthzAuthenticationManagerTests {
     void unverifiedAuthenticationFailsWhenNotAllowed() {
         mgr.setAllowUnverifiedUsers(false);
         user.setVerified(false);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         assertThrows(AccountNotVerifiedException.class, () -> mgr.authenticate(createAuthRequest("auser", "password")));
         verify(publisher).publishEvent(isA(UnverifiedUserAuthenticationEvent.class));
     }
@@ -281,7 +277,7 @@ class AuthzAuthenticationManagerTests {
         PasswordPolicy policy = new PasswordPolicy();
         policy.setPasswordNewerThan(new Date(System.currentTimeMillis() + 1000));
         when(idpDefinition.getPasswordPolicy()).thenReturn(policy);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication authentication = mgr.authenticate(createAuthRequest("auser", "password"));
         assertTrue(((UaaAuthentication) authentication).isRequiresPasswordChange());
         assertTrue(authentication.isAuthenticated());
@@ -297,7 +293,7 @@ class AuthzAuthenticationManagerTests {
         Date past = new Date(System.currentTimeMillis() - 10000000);
         policy.setPasswordNewerThan(past);
         when(idpDefinition.getPasswordPolicy()).thenReturn(policy);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         mgr.authenticate(createAuthRequest("auser", "password"));
     }
 
@@ -305,9 +301,9 @@ class AuthzAuthenticationManagerTests {
     void userIsLockedOutAfterNumberOfUnsuccessfulTriesIsExceeded() {
         AccountLoginPolicy lockoutPolicy = mock(PeriodLockoutPolicy.class);
         mgr.setAccountLoginPolicy(lockoutPolicy);
-        when(db.retrieveUserByName("auser", OriginKeys.UAA)).thenReturn(user);
+        when(mockScimUserProvisioning.retrieveByUsername("auser", OriginKeys.UAA, IdentityZoneHolder.get().getId())).thenReturn(user);
         Authentication authentication = createAuthRequest("auser", "password");
-        when(lockoutPolicy.isAllowed(any(UaaUser.class), eq(authentication))).thenReturn(false);
+        when(lockoutPolicy.isAllowed(any(ScimUser.class), eq(authentication))).thenReturn(false);
 
         assertThrows(AuthenticationPolicyRejectionException.class, () -> mgr.authenticate(authentication));
 

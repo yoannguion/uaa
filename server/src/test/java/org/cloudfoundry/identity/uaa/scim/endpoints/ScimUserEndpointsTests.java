@@ -445,7 +445,7 @@ class ScimUserEndpointsTests {
         user.addEmail("dsyer@vmware.com");
         ReflectionTestUtils.setField(user, "password", "foo");
         ScimUser created = scimUserEndpoints.createUser(user, new MockHttpServletRequest(), new MockHttpServletResponse());
-        assertNull("A newly created user revealed its password", created.getPassword());
+        assertEquals(passwordEncoder.encode("foo"), created.getPassword());
         String password = jdbcTemplate.queryForObject("select password from users where id=?", String.class,
                 created.getId());
         assertTrue(passwordEncoder.matches("foo", password));

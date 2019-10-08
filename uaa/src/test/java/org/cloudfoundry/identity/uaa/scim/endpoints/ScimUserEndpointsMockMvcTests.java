@@ -175,7 +175,7 @@ class ScimUserEndpointsMockMvcTests {
     @Test
     void testCanCreateUserWithExclamationMark() throws Exception {
         String email = "joe!!@" + generator.generate().toLowerCase() + ".com";
-        ScimUser user = getScimUser();
+        ScimUser user = makeScimUserObject();
         user.getEmails().clear();
         user.setUserName(email);
         user.setPrimaryEmail(email);
@@ -185,7 +185,7 @@ class ScimUserEndpointsMockMvcTests {
     @Test
     void test_Create_User_Too_Long_Password() throws Exception {
         String email = "joe@" + generator.generate().toLowerCase() + ".com";
-        ScimUser user = getScimUser();
+        ScimUser user = makeScimUserObject();
         user.setUserName(email);
         user.setPassword(new RandomValueStringGenerator(300).generate());
         ResultActions result = createUserAndReturnResult(user, scimReadWriteToken, null, null);
@@ -197,7 +197,7 @@ class ScimUserEndpointsMockMvcTests {
 
     @Test
     void test_Create_User_More_Than_One_Email() throws Exception {
-        ScimUser scimUser = getScimUser();
+        ScimUser scimUser = makeScimUserObject();
         String secondEmail = "joe@" + generator.generate().toLowerCase() + ".com";
         scimUser.addEmail(secondEmail);
         createUserAndReturnResult(scimUser, scimReadWriteToken, null, null)
@@ -223,13 +223,13 @@ class ScimUserEndpointsMockMvcTests {
     void createUserInOtherZoneWithUaaAdminToken() throws Exception {
         IdentityZone otherIdentityZone = getIdentityZone();
 
-        createUser(getScimUser(), uaaAdminToken, IdentityZone.getUaa().getSubdomain(), otherIdentityZone.getId());
+        createUser(makeScimUserObject(), uaaAdminToken, IdentityZone.getUaa().getSubdomain(), otherIdentityZone.getId());
     }
 
     @Test
     void default_password_policy_does_not_allow_empty_passwords() throws Exception {
         IdentityZone otherIdentityZone = getIdentityZone();
-        ScimUser scimUser = getScimUser();
+        ScimUser scimUser = makeScimUserObject();
         scimUser.setPassword("");
 
         IdentityProvider<UaaIdentityProviderDefinition> uaa =
@@ -251,7 +251,7 @@ class ScimUserEndpointsMockMvcTests {
         clientDetails = MockMvcUtils.createClient(mockMvc, uaaAdminToken, "testClientId", "testClientSecret", null, null, Collections.singletonList("client_credentials"), authorities, null, identityZone);
         String uaaAdminTokenFromOtherZone = testClient.getClientCredentialsOAuthAccessToken("testClientId", "testClientSecret", "uaa.admin", identityZone.getSubdomain());
 
-        byte[] requestBody = JsonUtils.writeValueAsBytes(getScimUser());
+        byte[] requestBody = JsonUtils.writeValueAsBytes(makeScimUserObject());
         MockHttpServletRequestBuilder post = post("/Users")
                 .header("Authorization", "Bearer " + uaaAdminTokenFromOtherZone)
                 .contentType(APPLICATION_JSON)
@@ -533,7 +533,7 @@ class ScimUserEndpointsMockMvcTests {
 
         int usersMaxCountWithOffset = usersMaxCount + 1;
         for (int i = 0; i < usersMaxCountWithOffset; i++) {
-            createUser(getScimUser(), zoneAdminToken, IdentityZone.getUaa().getSubdomain(), result.getIdentityZone().getId());
+            createUser(makeScimUserObject(), zoneAdminToken, IdentityZone.getUaa().getSubdomain(), result.getIdentityZone().getId());
         }
 
         MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get("/Users").param("count", Integer.toString(usersMaxCountWithOffset))
@@ -575,12 +575,12 @@ class ScimUserEndpointsMockMvcTests {
         String subdomain = generator.generate();
         MockMvcUtils.IdentityZoneCreationResult result = MockMvcUtils.createOtherIdentityZoneAndReturnResult(subdomain, mockMvc, webApplicationContext, null, IdentityZoneHolder.getCurrentZoneId());
         String zoneAdminToken = result.getZoneAdminToken();
-        createUser(getScimUser(), zoneAdminToken, IdentityZone.getUaa().getSubdomain(), result.getIdentityZone().getId());
+        createUser(makeScimUserObject(), zoneAdminToken, IdentityZone.getUaa().getSubdomain(), result.getIdentityZone().getId());
     }
 
     @Test
     void testUserSelfAccess_Get_and_Post() throws Exception {
-        ScimUser user = getScimUser();
+        ScimUser user = makeScimUserObject();
         user.setPassword("secret");
 
         ScimUser savedUser = createUser(user, scimReadWriteToken, IdentityZone.getUaa().getSubdomain());
@@ -604,7 +604,7 @@ class ScimUserEndpointsMockMvcTests {
 
         String zoneAdminToken = testClient.getClientCredentialsOAuthAccessToken("admin", "admin-secret", "scim.write", subdomain);
 
-        ScimUser user = getScimUser();
+        ScimUser user = makeScimUserObject();
 
         byte[] requestBody = JsonUtils.writeValueAsBytes(user);
         MockHttpServletRequestBuilder post = post("/Users")
@@ -1154,7 +1154,7 @@ class ScimUserEndpointsMockMvcTests {
 
     @Test
     void cannotCreateUserWithInvalidPasswordInDefaultZone() throws Exception {
-        ScimUser user = getScimUser();
+        ScimUser user = makeScimUserObject();
         user.setPassword(new RandomValueStringGenerator(260).generate());
         byte[] requestBody = JsonUtils.writeValueAsBytes(user);
         MockHttpServletRequestBuilder post = post("/Users")
@@ -1377,7 +1377,7 @@ class ScimUserEndpointsMockMvcTests {
     }
 
     private ScimUser createUser(String token, String subdomain) throws Exception {
-        return createUser(getScimUser(), token, subdomain);
+        return createUser(makeScimUserObject(), token, subdomain);
     }
 
     private ScimUser createUser(ScimUser user, String token, String subdomain) throws Exception {
@@ -1413,7 +1413,7 @@ class ScimUserEndpointsMockMvcTests {
         return mockMvc.perform(post);
     }
 
-    private ScimUser getScimUser() {
+    private ScimUser makeScimUserObject() {
         String email = "joe@" + generator.generate().toLowerCase() + ".com";
         ScimUser user = new ScimUser();
         user.setUserName(email);
@@ -1538,6 +1538,7 @@ class ScimUserEndpointsMockMvcTests {
                     .andExpect(jsonPath("$.emails[0].value").value(user.getPrimaryEmail()))
                     .andExpect(jsonPath("$.name.familyName").value(user.getFamilyName()))
                     .andExpect(jsonPath("$.name.givenName").value(user.getGivenName()))
+                    .andExpect(jsonPath("$.password").doesNotExist())
                     .andReturn().getResponse().getContentAsString();
             return JsonUtils.readValue(json, ScimUser.class);
         } else {

@@ -12,11 +12,11 @@
  *******************************************************************************/
 package org.cloudfoundry.identity.uaa.authentication.manager;
 
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.cloudfoundry.identity.uaa.authentication.manager.LoginPolicy.Result;
 import org.cloudfoundry.identity.uaa.provider.LockoutPolicy;
-import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -46,13 +46,13 @@ public class PeriodLockoutPolicy implements AccountLoginPolicy {
     }
 
     @Override
-    public boolean isAllowed(UaaUser user, Authentication a) throws AuthenticationException {
+    public boolean isAllowed(ScimUser user, Authentication a) throws AuthenticationException {
         Result loginResult = loginPolicy.isAllowed(user.getId());
         Result mfaResult = mfaPolicy.isAllowed(user.getId());
         if (loginResult.isAllowed() && mfaResult.isAllowed()) {
             return true;
         }
-        logger.warn("User " + user.getUsername() + " and id " + user.getId() + " has "
+        logger.warn("User " + user.getUserName() + " and id " + user.getId() + " has "
           + loginResult.getFailureCount() + " failed user logins within the last checking period."
           + " and " + mfaResult.getFailureCount() + " failed  mfa attempts within the last checking period.");
         return false;

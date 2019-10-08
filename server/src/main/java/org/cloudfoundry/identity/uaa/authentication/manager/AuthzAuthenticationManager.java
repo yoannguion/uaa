@@ -27,6 +27,10 @@ import org.cloudfoundry.identity.uaa.logging.SanitizedLogFactory;
 import org.cloudfoundry.identity.uaa.provider.IdentityProvider;
 import org.cloudfoundry.identity.uaa.provider.IdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.provider.UaaIdentityProviderDefinition;
+import org.cloudfoundry.identity.uaa.scim.ScimUser;
+import org.cloudfoundry.identity.uaa.scim.ScimUserProvisioning;
+import org.cloudfoundry.identity.uaa.scim.exception.ScimResourceNotFoundException;
+import org.cloudfoundry.identity.uaa.user.UaaAuthority;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.user.UaaUserDatabase;
 import org.cloudfoundry.identity.uaa.util.ObjectUtils;
@@ -52,7 +56,7 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
 
     private final SanitizedLogFactory.SanitizedLog logger = SanitizedLogFactory.getLog(getClass());
     private final PasswordEncoder encoder;
-    private final UaaUserDatabase userDatabase;
+    private final ScimUserProvisioning scimUserProvisioning;
     private ApplicationEventPublisher eventPublisher;
     private AccountLoginPolicy accountLoginPolicy;
     private IdentityProviderProvisioning providerProvisioning;
@@ -60,8 +64,8 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
     private String origin;
     private boolean allowUnverifiedUsers = true;
 
-    public AuthzAuthenticationManager(UaaUserDatabase userDatabase, PasswordEncoder encoder, IdentityProviderProvisioning providerProvisioning) {
-        this.userDatabase = userDatabase;
+    public AuthzAuthenticationManager(ScimUserProvisioning scimUserProvisioning, PasswordEncoder encoder, IdentityProviderProvisioning providerProvisioning) {
+        this.scimUserProvisioning = scimUserProvisioning;
         this.encoder = encoder;
         this.providerProvisioning = providerProvisioning;
     }
@@ -76,14 +80,14 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
             throw e;
         }
 
-        UaaUser user = getUaaUser(req);
+        ScimUser user = getScimUser(req);
 
         if (user == null) {
             logger.debug("No user named '" + req.getName() + "' was found for origin:"+ origin);
             publish(new UserNotFoundEvent(req, IdentityZoneHolder.getCurrentZoneId()));
         } else {
             if (!accountLoginPolicy.isAllowed(user, req)) {
-                logger.warn("Login policy rejected authentication for " + user.getUsername() + ", " + user.getId()
+                logger.warn("Login policy rejected authentication for " + user.getUserName() + ", " + user.getId()
                         + ". Ignoring login request.");
                 AuthenticationPolicyRejectionException e = new AuthenticationPolicyRejectionException("Your account has been locked because of too many failed attempts to login.");
                 publish(new AuthenticationFailureLockedEvent(req, e));
@@ -95,19 +99,19 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
             if (!passwordMatches) {
                 logger.debug("Password did not match for user " + req.getName());
                 publish(new IdentityProviderAuthenticationFailureEvent(req, req.getName(), OriginKeys.UAA, IdentityZoneHolder.getCurrentZoneId()));
-                publish(new UserAuthenticationFailureEvent(user, req, IdentityZoneHolder.getCurrentZoneId()));
+                publish(new UserAuthenticationFailureEvent(user.getUaaUserWithoutAuthorities(), req, IdentityZoneHolder.getCurrentZoneId()));
             } else {
-                logger.debug("Password successfully matched for userId["+user.getUsername()+"]:"+user.getId());
+                logger.debug("Password successfully matched for userId["+user.getUserName()+"]:"+user.getId());
 
                 if (!(allowUnverifiedUsers && user.isLegacyVerificationBehavior()) && !user.isVerified()) {
-                    publish(new UnverifiedUserAuthenticationEvent(user, req, IdentityZoneHolder.getCurrentZoneId()));
+                    publish(new UnverifiedUserAuthenticationEvent(user.getUaaUserWithoutAuthorities(), req, IdentityZoneHolder.getCurrentZoneId()));
                     logger.debug("Account not verified: " + user.getId());
                     throw new AccountNotVerifiedException("Account not verified");
                 }
 
                 UaaAuthentication success = new UaaAuthentication(
                         new UaaPrincipal(user),
-                        user.getAuthorities(),
+                        UaaAuthority.USER_AUTHORITIES,  // <<----- TODO: Make less WRONG!
                         (UaaAuthenticationDetails) req.getDetails());
 
                 if (checkPasswordExpired(user.getPasswordLastModified())) {
@@ -118,17 +122,17 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
                 Date passwordNewerThan = getPasswordNewerThan();
                 if(passwordNewerThan != null) {
                     if(user.getPasswordLastModified() == null || (passwordNewerThan.getTime() > user.getPasswordLastModified().getTime())) {
-                        logger.info("Password change required for user: "+user.getEmail());
+                        logger.info("Password change required for user: "+user.getPrimaryEmail());
                         success.setRequiresPasswordChange(true);
                     }
                 }
 
                 if(user.isPasswordChangeRequired()){
-                    logger.info("Password change required for user: "+user.getEmail());
+                    logger.info("Password change required for user: "+user.getPrimaryEmail());
                     success.setRequiresPasswordChange(true);
                 }
 
-                publish(new IdentityProviderAuthenticationSuccessEvent(user, success, OriginKeys.UAA, IdentityZoneHolder.getCurrentZoneId()));
+                publish(new IdentityProviderAuthenticationSuccessEvent(user.getUaaUserWithoutAuthorities(), success, OriginKeys.UAA, IdentityZoneHolder.getCurrentZoneId()));
                 return success;
             }
         }
@@ -164,13 +168,11 @@ public class AuthzAuthenticationManager implements AuthenticationManager, Applic
         return result;
     }
 
-    private UaaUser getUaaUser(Authentication req) {
+    private ScimUser getScimUser(Authentication req) {
         try {
-            UaaUser user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US), getOrigin());
-            if (user!=null) {
-                return user;
-            }
-        } catch (UsernameNotFoundException ignored) {
+            ScimUser user = scimUserProvisioning.retrieveByUsernameWithPassword(req.getName().toLowerCase(Locale.US), getOrigin(), IdentityZoneHolder.get().getId());
+            return user;
+        } catch (ScimResourceNotFoundException ignored) {
         }
         return null;
     }

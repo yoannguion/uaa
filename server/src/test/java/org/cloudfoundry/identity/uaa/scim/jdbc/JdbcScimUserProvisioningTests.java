@@ -67,6 +67,7 @@ class JdbcScimUserProvisioningTests {
     private RandomValueStringGenerator generator;
     private JdbcPagingListFactory pagingListFactory;
     private String joeId;
+    private String origin = "uaa";
     private String currentIdentityZoneId;
 
     @Autowired
@@ -696,6 +697,34 @@ class JdbcScimUserProvisioningTests {
         String userId2 = jdbcScimUserProvisioning.create(scimUser, currentIdentityZoneId).getId();
         assertNotNull(userId2);
         assertNotEquals("cba09242-aa43-4247-9aa0-b5c75c281f94", userId2);
+    }
+
+    @Test
+    void retrieveByUsernameReturnsAScimUser() {
+            ScimUser scimUser = jdbcScimUserProvisioning.retrieveByUsername("mabel", origin, currentIdentityZoneId);
+            assertNotNull(scimUser);
+            assertEquals("mabel", scimUser.getUserName());
+    }
+
+    @Test
+    void retrieveByUsernameCannotRetrieveWhenOriginDoesNotMatch() {
+            assertThrows(ScimResourceNotFoundException.class,
+                () -> jdbcScimUserProvisioning.retrieveByUsername("mabel", "bad-origin", currentIdentityZoneId));
+    }
+
+    @Test
+    void retrieveByUsernameCannotRetrieveWhenZoneDoesNotMatch() {
+            assertThrows(ScimResourceNotFoundException.class,
+                () -> jdbcScimUserProvisioning.retrieveByUsername("mabel", origin, "bad-zone"));
+    }
+
+    @Test
+    void retrieveByUsernameCannotRetrieveInactiveUser() {
+            ScimUser scimUser = jdbcScimUserProvisioning.retrieveByUsername("mabel", origin, currentIdentityZoneId);
+            jdbcScimUserProvisioning.delete(scimUser.getId(), -1, currentIdentityZoneId);
+
+            assertThrows(ScimResourceNotFoundException.class,
+                () -> jdbcScimUserProvisioning.retrieveByUsername("mabel", origin, currentIdentityZoneId));
     }
 
     @Test

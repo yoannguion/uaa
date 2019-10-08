@@ -40,6 +40,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
@@ -69,10 +70,9 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
         return logger;
     }
 
-    public static final String USER_FIELDS = "id,version,created,lastModified,username,email,givenName,familyName,active,phoneNumber,verified,origin,external_id,identity_zone_id,salt,passwd_lastmodified,last_logon_success_time,previous_logon_success_time";
+    public static final String USER_FIELDS = "id,version,created,lastModified,username,email,givenName,familyName,active,phoneNumber,verified,origin,external_id,identity_zone_id,salt,passwd_lastmodified,last_logon_success_time,previous_logon_success_time,legacy_verification_behavior,passwd_change_required";
 
-    public static final String CREATE_USER_SQL = "insert into users (" + USER_FIELDS
-                    + ",password) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    public static final String CREATE_USER_SQL = "insert into users (" + USER_FIELDS + ",password) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     public static final String UPDATE_USER_SQL = "update users set version=?, lastModified=?, username=?, email=?, givenName=?, familyName=?, active=?, phoneNumber=?, verified=?, origin=?, external_id=?, salt=? where id=? and version=? and identity_zone_id=?";
 
@@ -94,6 +94,8 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
 
     public static final String USER_BY_ID_QUERY = "select " + USER_FIELDS + " from users " + "where id=? and identity_zone_id=?";
     public static final String USER_BY_EMAIL_QUERY = "select " + USER_FIELDS + " from users " + "where email=? and origin=? and identity_zone_id=?";
+
+    public static final String USER_BY_USERNAME = "select " + USER_FIELDS + " from users " + "where username=? and active=? and origin=? and identity_zone_id=?";
 
     public static final String ALL_USERS = "select " + USER_FIELDS + " from users";
 
@@ -205,7 +207,9 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
                 ps.setTimestamp(16, getPasswordLastModifiedTimestamp(t));
                 ps.setNull(17, Types.BIGINT);
                 ps.setNull(18, Types.BIGINT);
-                ps.setString(19, user.getPassword());
+                ps.setBoolean(19, user.isLegacyVerificationBehavior());
+                ps.setBoolean(20, user.isPasswordChangeRequired());
+                ps.setString(21, user.getPassword());
             });
         } catch (DuplicateKeyException e) {
             ScimUser existingUser = query("userName eq \"" + user.getUserName() + "\" and origin eq \"" + (hasText(user.getOrigin())? user.getOrigin() : OriginKeys.UAA) + "\"", zoneId).get(0);
@@ -364,6 +368,14 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
         return user;
     }
 
+    public ScimUser retrieveByUsername(String username, String origin, String zoneId) throws ScimResourceNotFoundException {
+        try {
+            return jdbcTemplate.queryForObject(USER_BY_USERNAME, mapper, username, true, origin, zoneId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ScimResourceNotFoundException("User " + username + " does not exist");
+        }
+    }
+
     @Override
     public ScimUser verifyUser(String id, int version, String zoneId) throws ScimResourceNotFoundException,
                     InvalidScimResourceException {
@@ -453,6 +465,9 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
             String givenName = rs.getString("givenName");
             String familyName = rs.getString("familyName");
             boolean active = rs.getBoolean("active");
+            boolean legacyVerificationBehavior = rs.getBoolean("legacy_verification_behavior");
+            String password = rs.getString("password");
+            boolean passwordChangeRequired = rs.getBoolean("passwd_change_required");
             String phoneNumber = rs.getString("phoneNumber");
             boolean verified = rs.getBoolean("verified");
             String origin = rs.getString("origin");
@@ -486,6 +501,9 @@ public class JdbcScimUserProvisioning extends AbstractQueryable<ScimUser>
             user.setSalt(salt);
             user.setPasswordLastModified(passwordLastModified);
             user.setLastLogonTime(lastLogonTime);
+            user.setLegacyVerificationBehavior(legacyVerificationBehavior);
+            user.setPassword(password);
+            user.setPasswordChangeRequired(passwordChangeRequired);
             user.setPreviousLogonTime(previousLogonTime);
             return user;
         }
