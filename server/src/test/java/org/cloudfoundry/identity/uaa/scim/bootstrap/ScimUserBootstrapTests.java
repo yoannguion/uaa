@@ -5,6 +5,8 @@ import org.cloudfoundry.identity.uaa.audit.event.EntityDeletedEvent;
 import org.cloudfoundry.identity.uaa.authentication.manager.ExternalGroupAuthorizationEvent;
 import org.cloudfoundry.identity.uaa.authentication.manager.InvitedUserAuthenticatedEvent;
 import org.cloudfoundry.identity.uaa.constants.OriginKeys;
+import org.cloudfoundry.identity.uaa.oauth.token.JdbcRevocableTokenProvisioning;
+import org.cloudfoundry.identity.uaa.provider.JdbcIdentityProviderProvisioning;
 import org.cloudfoundry.identity.uaa.resources.jdbc.JdbcPagingListFactory;
 import org.cloudfoundry.identity.uaa.resources.jdbc.LimitSqlAdapterFactory;
 import org.cloudfoundry.identity.uaa.scim.ScimGroup;
@@ -16,6 +18,7 @@ import org.cloudfoundry.identity.uaa.scim.exception.MemberNotFoundException;
 import org.cloudfoundry.identity.uaa.scim.jdbc.JdbcScimGroupMembershipManager;
 import org.cloudfoundry.identity.uaa.scim.jdbc.JdbcScimGroupProvisioning;
 import org.cloudfoundry.identity.uaa.scim.jdbc.JdbcScimUserProvisioning;
+import org.cloudfoundry.identity.uaa.security.IsSelfCheck;
 import org.cloudfoundry.identity.uaa.test.TestUtils;
 import org.cloudfoundry.identity.uaa.user.UaaUser;
 import org.cloudfoundry.identity.uaa.util.TimeServiceImpl;
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -78,6 +82,11 @@ class ScimUserBootstrapTests {
     private JdbcScimGroupMembershipManager jdbcScimGroupMembershipManager;
     private ScimUserEndpoints scimUserEndpoints;
 
+    @Mock
+    JdbcRevocableTokenProvisioning mockJdbcRevocableTokenProvisioning;
+    @Mock
+    JdbcIdentityProviderProvisioning mockIdentityProviderProvisioning;
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -91,10 +100,13 @@ class ScimUserBootstrapTests {
         jdbcScimGroupProvisioning = new JdbcScimGroupProvisioning(jdbcTemplate, pagingListFactory);
         jdbcScimGroupMembershipManager = new JdbcScimGroupMembershipManager(jdbcTemplate, new TimeServiceImpl(), jdbcScimUserProvisioning, null);
         jdbcScimGroupMembershipManager.setScimGroupProvisioning(jdbcScimGroupProvisioning);
-        scimUserEndpoints = new ScimUserEndpoints(new IdentityZoneManagerImpl());
+        scimUserEndpoints = new ScimUserEndpoints(
+                new IdentityZoneManagerImpl(),
+                new IsSelfCheck(mockJdbcRevocableTokenProvisioning),
+                jdbcScimUserProvisioning,
+                mockIdentityProviderProvisioning);
         scimUserEndpoints.setUserMaxCount(5);
         scimUserEndpoints.setScimGroupMembershipManager(jdbcScimGroupMembershipManager);
-        scimUserEndpoints.setScimUserProvisioning(jdbcScimUserProvisioning);
         IdentityZoneHolder.get().getConfig().getUserConfig().setDefaultGroups(emptyList());
     }
 
