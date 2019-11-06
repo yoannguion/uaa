@@ -139,7 +139,6 @@
     </util:map>
 
     <bean id="scimUserEndpoints" class="org.cloudfoundry.identity.uaa.scim.endpoints.ScimUserEndpoints">
-        <property name="scimGroupMembershipManager" ref="groupMembershipManager"/>
     </bean>
 
     <bean id="scimGroupEndpoints" class="org.cloudfoundry.identity.uaa.scim.endpoints.ScimGroupEndpoints" />
