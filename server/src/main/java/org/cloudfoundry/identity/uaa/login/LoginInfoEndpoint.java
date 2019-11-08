@@ -332,7 +332,7 @@ public class LoginInfoEndpoint {
         model.addAttribute(ENTITY_ID, zonifiedEntityID);
 
         excludedPrompts = new LinkedList<>(excludedPrompts);
-        String origin = request != null ? request.getParameter("origin") : null;
+        String origin = request.getParameter("origin");
         populatePrompts(model, excludedPrompts, origin, samlIdentityProviders, oauthIdentityProviders,
                 excludedPrompts, returnLoginPrompts);
 
