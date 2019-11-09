@@ -259,11 +259,27 @@ public class LoginInfoEndpoint {
         return SamlRedirectUtils.getZonifiedEntityId(entityID, IdentityZoneHolder.get());
     }
 
+    private boolean ldapAndUaaIdpsAreDisabled(IdentityProvider uaaIdentityProvider, IdentityProvider ldapIdentityProvider) {
+        return !uaaIdentityProvider.isActive() && (ldapIdentityProvider == null || !ldapIdentityProvider.isActive());
+    }
+
+    private boolean disallowLdapAndUaaAndKeystoneIdps(List<String> allowedIdentityProviderKeys) {
+        return allowedIdentityProviderKeys != null &&
+                !allowedIdentityProviderKeys.contains(OriginKeys.LDAP) &&
+                !allowedIdentityProviderKeys.contains(UAA) &&
+                !allowedIdentityProviderKeys.contains(OriginKeys.KEYSTONE);
+    }
+
+    private boolean thereIsEitherAUaaOrLdapIDP(IdentityProvider uaaIdentityProvider, IdentityProvider ldapIdentityProvider, List<String> allowedIdentityProviderKeys) {
+        return !ldapAndUaaIdpsAreDisabled(uaaIdentityProvider, ldapIdentityProvider) && !disallowLdapAndUaaAndKeystoneIdps(allowedIdentityProviderKeys);
+    }
+
     private String login(Model model, Principal principal, List<String> excludedPrompts, boolean jsonResponse, HttpServletRequest request) {
         if (principal instanceof UaaAuthentication && ((UaaAuthentication) principal).isAuthenticated()) {
             return "redirect:/home";
         }
 
+        // Get client name and allowed identity provider keys
         HttpSession session = request != null ? request.getSession(false) : null;
         List<String> allowedIdentityProviderKeys = null;
         String clientName = null;
@@ -273,49 +289,39 @@ public class LoginInfoEndpoint {
             clientName = (String) clientInfo.get(ClientConstants.CLIENT_NAME);
         }
 
+        // Get IDP definitions
         Map<String, SamlIdentityProviderDefinition> samlIdentityProviders = getSamlIdentityProviderDefinitions(allowedIdentityProviderKeys);
         Map<String, AbstractXOAuthIdentityProviderDefinition> oauthIdentityProviders = getOauthIdentityProviderDefinitions(allowedIdentityProviderKeys);
         Map<String, AbstractIdentityProviderDefinition> allIdentityProviders = new HashMap<>();
         allIdentityProviders.putAll(samlIdentityProviders);
         allIdentityProviders.putAll(oauthIdentityProviders);
 
+        // Get ldap IDP
         IdentityProvider ldapIdentityProvider = null;
         try {
             ldapIdentityProvider = providerProvisioning.retrieveByOrigin(OriginKeys.LDAP, IdentityZoneHolder.get().getId());
         } catch (EmptyResultDataAccessException ignored) {
         }
+
+        //Get UAA internal IDP
         IdentityProvider uaaIdentityProvider =
                 providerProvisioning.retrieveByOriginIgnoreActiveFlag(OriginKeys.UAA, IdentityZoneHolder.get().getId());
 
-        boolean fieldUsernameShow = true;
-        boolean returnLoginPrompts = true;
-        // ldap and uaa disabled removes username/password input boxes
-        if (!uaaIdentityProvider.isActive()) {
-            if (ldapIdentityProvider == null || !ldapIdentityProvider.isActive()) {
-                fieldUsernameShow = false;
-                returnLoginPrompts = false;
-            }
-        }
+        //Decide if you will show username field and login prompts
+        // TODO push !s into these helper methods
+        final boolean showUsernameField = thereIsEitherAUaaOrLdapIDP(uaaIdentityProvider, ldapIdentityProvider, allowedIdentityProviderKeys);
+        final boolean returnLoginPrompts = !ldapAndUaaIdpsAreDisabled(uaaIdentityProvider, ldapIdentityProvider);
 
-        // ldap or uaa not part of allowedIdentityProviderKeys
-        if (allowedIdentityProviderKeys != null &&
-                !allowedIdentityProviderKeys.contains(OriginKeys.LDAP) &&
-                !allowedIdentityProviderKeys.contains(OriginKeys.UAA) &&
-                !allowedIdentityProviderKeys.contains(OriginKeys.KEYSTONE)) {
-            fieldUsernameShow = false;
-        }
-
-        Map.Entry<String, AbstractIdentityProviderDefinition> idpForRedirect;
-        idpForRedirect = evaluateLoginHint(model, session, samlIdentityProviders,
-                oauthIdentityProviders, allIdentityProviders, allowedIdentityProviderKeys, request);
-
+        // Something About idpForRedirect and Idp Discovery????
+        Map.Entry<String, AbstractIdentityProviderDefinition> idpForRedirect = evaluateLoginHint(model,
+                session, samlIdentityProviders, oauthIdentityProviders, allIdentityProviders,
+                allowedIdentityProviderKeys, request);
         boolean discoveryEnabled = IdentityZoneHolder.get().getConfig().isIdpDiscoveryEnabled();
         boolean discoveryPerformed = Boolean.parseBoolean(request.getParameter("discoveryPerformed"));
         String defaultIdentityProviderName = IdentityZoneHolder.get().getConfig().getDefaultIdentityProvider();
-
         idpForRedirect = evaluateIdpDiscovery(model, samlIdentityProviders, oauthIdentityProviders,
                 allIdentityProviders, allowedIdentityProviderKeys, idpForRedirect, discoveryEnabled, discoveryPerformed, defaultIdentityProviderName);
-        if (idpForRedirect == null && !jsonResponse && !fieldUsernameShow && allIdentityProviders.size() == 1) {
+        if (idpForRedirect == null && !jsonResponse && !showUsernameField && allIdentityProviders.size() == 1) {
             idpForRedirect = allIdentityProviders.entrySet().stream().findAny().get();
         }
         if (idpForRedirect != null) {
@@ -328,23 +334,34 @@ public class LoginInfoEndpoint {
             }
         }
 
-        boolean linkCreateAccountShow = fieldUsernameShow;
-        if (fieldUsernameShow && (allowedIdentityProviderKeys != null)) {
+        // decide if we will show create account and reset password links
+        boolean showCreateAccountAndResetPasswordLinks = thereIsEitherAUaaOrLdapIDP(uaaIdentityProvider, ldapIdentityProvider, allowedIdentityProviderKeys);
+        if (thereIsEitherAUaaOrLdapIDP(uaaIdentityProvider, ldapIdentityProvider, allowedIdentityProviderKeys) && allowedIdentityProviderKeys != null) {
             if (!allowedIdentityProviderKeys.contains(OriginKeys.UAA)) {
-                linkCreateAccountShow = false;
-                model.addAttribute("login_hint", new UaaLoginHint(OriginKeys.LDAP).toString());
-            } else if (!allowedIdentityProviderKeys.contains(OriginKeys.LDAP)) {
-                model.addAttribute("login_hint", new UaaLoginHint(OriginKeys.UAA).toString());
+                showCreateAccountAndResetPasswordLinks = false;
             }
         }
 
+        // decide what login hint to show (if ldap or uaa idp)
+        if (thereIsEitherAUaaOrLdapIDP(uaaIdentityProvider, ldapIdentityProvider, allowedIdentityProviderKeys) && allowedIdentityProviderKeys != null) {
+            if (allowedIdentityProviderKeys.contains(OriginKeys.UAA)) {
+                if (!allowedIdentityProviderKeys.contains(OriginKeys.LDAP)) {
+                    model.addAttribute("login_hint", new UaaLoginHint(OriginKeys.UAA).toString());
+                } else {
+                    //show no login hint because you don't know if it's for uaa or ldap
+                }
+            } else {
+                model.addAttribute("login_hint", new UaaLoginHint(OriginKeys.LDAP).toString());
+            }
+        }
+
+        // Prepare view model
         String zonifiedEntityID = getZonifiedEntityId();
         Map links = getLinksInfo();
         if (jsonResponse) {
             setJsonInfo(model, samlIdentityProviders, zonifiedEntityID, links);
         } else {
-            updateLoginPageModel(model, request, clientName, samlIdentityProviders, oauthIdentityProviders,
-                    fieldUsernameShow, linkCreateAccountShow);
+            updateLoginPageModel(model, request, clientName, samlIdentityProviders, oauthIdentityProviders, showUsernameField, showCreateAccountAndResetPasswordLinks);
         }
 
         model.addAttribute(LINKS, links);
@@ -432,9 +449,11 @@ public class LoginInfoEndpoint {
             String zonifiedEntityID,
             Map links
     ) {
+        //Remove UI only attributes
         for (String attribute : UI_ONLY_ATTRIBUTES) {
             links.remove(attribute);
         }
+        // Add Saml IDP definitions
         Map<String, String> idpDefinitionsForJson = new HashMap<>();
         if (samlIdentityProviders != null) {
             for (SamlIdentityProviderDefinition def : samlIdentityProviders.values()) {
