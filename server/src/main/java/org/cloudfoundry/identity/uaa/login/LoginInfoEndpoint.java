@@ -279,8 +279,6 @@ public class LoginInfoEndpoint {
         allIdentityProviders.putAll(samlIdentityProviders);
         allIdentityProviders.putAll(oauthIdentityProviders);
 
-        boolean fieldUsernameShow = true;
-        boolean returnLoginPrompts = true;
         IdentityProvider ldapIdentityProvider = null;
         try {
             ldapIdentityProvider = providerProvisioning.retrieveByOrigin(OriginKeys.LDAP, IdentityZoneHolder.get().getId());
@@ -288,6 +286,9 @@ public class LoginInfoEndpoint {
         }
         IdentityProvider uaaIdentityProvider =
                 providerProvisioning.retrieveByOriginIgnoreActiveFlag(OriginKeys.UAA, IdentityZoneHolder.get().getId());
+
+        boolean fieldUsernameShow = true;
+        boolean returnLoginPrompts = true;
         // ldap and uaa disabled removes username/password input boxes
         if (!uaaIdentityProvider.isActive()) {
             if (ldapIdentityProvider == null || !ldapIdentityProvider.isActive()) {
