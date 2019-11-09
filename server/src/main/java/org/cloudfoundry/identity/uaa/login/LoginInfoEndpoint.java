@@ -250,11 +250,9 @@ public class LoginInfoEndpoint {
                 getSamlIdentityProviderDefinitions(allowedIdentityProviderKeys);
         Map<String, AbstractXOAuthIdentityProviderDefinition> oauthIdentityProviders =
                 getOauthIdentityProviderDefinitions(allowedIdentityProviderKeys);
-        Map<String, AbstractIdentityProviderDefinition> allIdentityProviders =
-                new HashMap<>() {{
-                    putAll(samlIdentityProviders);
-                    putAll(oauthIdentityProviders);
-                }};
+        Map<String, AbstractIdentityProviderDefinition> allIdentityProviders = new HashMap<>();
+        allIdentityProviders.putAll(samlIdentityProviders);
+        allIdentityProviders.putAll(oauthIdentityProviders);
 
         boolean fieldUsernameShow = true;
         boolean returnLoginPrompts = true;
